@@ -28,15 +28,18 @@ const TTL = time.Hour
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	var auth storage.Auth
 	if err := json.NewDecoder(r.Body).Decode(&auth); err != nil {
+		h.Error("json decode error", slog.String("error", err.Error()))
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	h.Info("Register request", slog.String("user", auth.Login))
 
 	if ok, err := h.storage.RegisterUser(auth); err != nil {
+		h.Error("storage: register user error", slog.String("error", err.Error()))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} else if !ok {
+		h.Warn("storage: unable create user", slog.String("user", auth.Login))
 		http.Error(w, "User already exist", http.StatusConflict)
 		return
 	}
@@ -44,8 +47,8 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	j, err := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{"iss": auth.Login, "exp": time.Now().Add(TTL).Unix()},
 	).SignedString([]byte(key))
-
 	if err != nil {
+		h.Error("create jwt error", slog.String("error", err.Error()))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -62,15 +65,18 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var auth storage.Auth
 	if err := json.NewDecoder(r.Body).Decode(&auth); err != nil {
+		h.Error("json decode error", slog.String("error", err.Error()))
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	h.Info("Login request", slog.String("user", auth.Login))
 
 	if ok, err := h.storage.LoginUser(auth); err != nil {
+		h.Error("storage: logon user error", slog.String("error", err.Error()))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} else if !ok {
+		h.Warn("authentication failed", slog.String("user", auth.Login))
 		http.Error(w, "Authentication failed", http.StatusUnauthorized)
 		return
 	}
@@ -78,8 +84,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	j, err := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{"iss": auth.Login, "exp": time.Now().Add(TTL).Unix()},
 	).SignedString([]byte(key))
-
 	if err != nil {
+		h.Error("create jwt error", slog.String("error", err.Error()))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -119,5 +125,4 @@ func Authorization(next http.Handler) http.Handler {
 	lNext:
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-
 }
