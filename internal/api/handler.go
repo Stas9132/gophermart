@@ -2,12 +2,15 @@ package api
 
 import (
 	"gophermart/internal/logger"
+	"gophermart/internal/storage"
 	"io"
 	"net/http"
 )
 
 type Storage interface {
 	io.Closer
+	RegisterUser(auth storage.Auth) (bool, error)
+	LoginUser(auth storage.Auth) (bool, error)
 }
 
 type Handler struct {
