@@ -28,5 +28,6 @@ func NewHandler(storage Storage, logger logger.Logger) *Handler {
 
 func (h *Handler) Test(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(GetIssuer(r.Context())))
 
 }

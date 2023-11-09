@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Logger interface {
@@ -17,7 +18,8 @@ func NewSlogLogger(c *config.Config) Logger {
 	replace := func(groups []string, a slog.Attr) slog.Attr {
 		// Remove time.
 		if a.Key == slog.TimeKey && len(groups) == 0 {
-			return slog.Attr{}
+			st := a.Value.Time()
+			a.Value = slog.StringValue(st.Format(time.DateTime))
 		}
 		// Remove the directory from the source's filename.
 		if a.Key == slog.SourceKey {
