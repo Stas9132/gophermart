@@ -71,6 +71,7 @@ func mRouter(handler *api.Handler) {
 
 	r.HandleFunc("/api/user/test", handler.Test).Methods(http.MethodGet)
 	r.HandleFunc("/api/user/register", handler.Register).Methods(http.MethodPost)
+	r.HandleFunc("/api/user/login", handler.Login).Methods(http.MethodPost)
 
 	http.Handle("/", r)
 }
