@@ -2,6 +2,9 @@ package storage
 
 import (
 	"context"
+	"fmt"
+	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
 )
@@ -12,6 +15,7 @@ type DBStorage struct {
 }
 
 func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logger) (*DBStorage, error) {
+	createDB(config.DatabaseURI)
 	return &DBStorage{
 		appCtx: ctx,
 		Logger: logger,
@@ -20,4 +24,34 @@ func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logg
 
 func (s *DBStorage) Close() error {
 	return nil
+}
+
+func createDB(DBConn string) {
+	conn, err := pgx.Connect(context.Background(), DBConn)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Successfully connected to the database!")
+
+	var tableExists bool
+	err = conn.QueryRow(context.Background(), "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = $1)", "users").Scan(&tableExists)
+	if err != nil {
+		panic(err)
+	}
+
+	if !tableExists {
+		_, err = conn.Exec(context.Background(), `CREATE TABLE users (
+	   id SERIAL PRIMARY KEY,
+	   name VARCHAR(50),
+	   email VARCHAR(50),
+	   password VARCHAR(50)
+	);`)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Table 'users' created.")
+	} else {
+		fmt.Println("Table 'users' already exist.")
+	}
 }
