@@ -46,7 +46,7 @@ func main() {
 
 	go func() {
 		mRouter(h)
-		server = &http.Server{Addr: c.Host + ":" + c.Port}
+		server = &http.Server{Addr: c.Address}
 		run(c)
 	}()
 

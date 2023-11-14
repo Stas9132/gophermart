@@ -36,7 +36,7 @@ func (a *Auth) UnmarshalJSON(data []byte) error {
 func (s *DBStorage) RegisterUser(auth Auth) (bool, error) {
 	h := sha1.Sum([]byte(auth.Password))
 	p := hex.EncodeToString(h[:])
-	if _, err := s.db.ExecContext(s.appCtx, "INSERT INTO auth(login, password) values ($1, $2)", auth.Login, p); err != nil {
+	if _, err := s.conn.Exec(s.appCtx, "INSERT INTO auth(login, password) values ($1, $2)", auth.Login, p); err != nil {
 		s.Error("unable insert into auth table", slog.String("error", err.Error()), slog.String("login", auth.Login))
 		return false, err
 	}
@@ -45,7 +45,7 @@ func (s *DBStorage) RegisterUser(auth Auth) (bool, error) {
 
 func (s *DBStorage) LoginUser(auth Auth) (bool, error) {
 	var p string
-	if err := s.db.QueryRowContext(s.appCtx, "SELECT password FROM auth where login = $1", auth.Login).Scan(&p); err != nil {
+	if err := s.conn.QueryRow(s.appCtx, "SELECT password FROM auth where login = $1", auth.Login).Scan(&p); err != nil {
 		s.Error("unable select from auth table", slog.String("error", err.Error()), slog.String("login", auth.Login))
 		return false, err
 	}
