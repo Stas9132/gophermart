@@ -2,29 +2,43 @@ package storage
 
 import (
 	"context"
+
 	"fmt"
+
+	"errors"
+	"github.com/golang-migrate/migrate"
+	_ "github.com/golang-migrate/migrate/database/postgres"
+	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
+	"log/slog"
 )
 
 type DBStorage struct {
 	appCtx context.Context
 	logger.Logger
+	conn *pgx.Conn
 }
 
 func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logger) (*DBStorage, error) {
 	createDB(config.DatabaseURI)
+	conn, err := createDB(config.DatabaseURI, logger)
+	if err != nil {
+		return nil, err
+	}
 	return &DBStorage{
 		appCtx: ctx,
 		Logger: logger,
+		conn:   conn,
 	}, nil
 }
 
 func (s *DBStorage) Close() error {
 	return nil
 }
+
 
 func createDB(DBConn string) {
 	conn, err := pgx.Connect(context.Background(), DBConn)
@@ -77,4 +91,4 @@ func createDB(DBConn string) {
 	} else {
 		fmt.Println("Table 'orders' already exists.")
 	}
-}
+
