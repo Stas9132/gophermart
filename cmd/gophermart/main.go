@@ -21,10 +21,14 @@ var (
 )
 
 func run(c *config.Config) {
-	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal(err)
-	}
 	log.Println("Server starting")
+	if err := server.ListenAndServe(); err != nil {
+		if errors.Is(err, http.ErrServerClosed) {
+			log.Println(err)
+		} else {
+			log.Fatal(err)
+		}
+	}
 }
 
 func main() {
@@ -36,13 +40,13 @@ func main() {
 	var err error
 	var st api.Storage
 	if st, err = storage.NewDBStorage(ctx, c, l); err != nil {
-		log.Fatalln("storage open error", err)
+		log.Fatal("storage open error", err)
 	}
 	h := api.NewHandler(st, l)
 
 	go func() {
 		mRouter(h)
-		server = &http.Server{Addr: c.Address}
+		server = &http.Server{Addr: c.Host + ":" + c.Port}
 		run(c)
 	}()
 
@@ -63,8 +67,11 @@ func mRouter(handler *api.Handler) {
 	r := mux.NewRouter()
 
 	//r.Use(handler.LoggingMiddleware, gzip.GzipMiddleware, handler.HashSHA256Middleware)
+	r.Use(api.Authorization)
 
-	r.HandleFunc("/test", handler.Test).Methods("GET")
+	r.HandleFunc("/api/user/test", handler.Test).Methods(http.MethodGet)
+	r.HandleFunc("/api/user/register", handler.Register).Methods(http.MethodPost)
+	r.HandleFunc("/api/user/login", handler.Login).Methods(http.MethodPost)
 
 	http.Handle("/", r)
 }
