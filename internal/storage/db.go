@@ -2,9 +2,12 @@ package storage
 
 import (
 	"context"
-	"database/sql"
-	_ "github.com/jackc/pgx/stdlib"
-	_ "github.com/jackc/pgx/v5"
+	"errors"
+	"github.com/golang-migrate/migrate"
+	_ "github.com/golang-migrate/migrate/database/postgres"
+	_ "github.com/golang-migrate/migrate/source/file"
+	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
 	"log/slog"
@@ -12,23 +15,44 @@ import (
 
 type DBStorage struct {
 	appCtx context.Context
-	db     *sql.DB
 	logger.Logger
+	conn *pgx.Conn
 }
 
 func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logger) (*DBStorage, error) {
-	db, err := sql.Open("pgx", "host=localhost port=5432 user=user1 password=user1 dbname=user1 sslmode=disable")
+	conn, err := createDB(config.DatabaseURI, logger)
 	if err != nil {
-		logger.Error("open database failed", slog.String("error", err.Error()))
 		return nil, err
 	}
 	return &DBStorage{
 		appCtx: ctx,
-		db:     db,
 		Logger: logger,
+		conn:   conn,
 	}, nil
 }
 
 func (s *DBStorage) Close() error {
 	return nil
+}
+
+func createDB(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
+	conn, err := pgx.Connect(context.Background(), DBConn)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("Successfully connected to the database!", slog.String("DSN", DBConn))
+
+	m, err := migrate.New("file://internal/storage/migration/", DBConn)
+	if err != nil {
+		logger.Error("Error while create migration", slog.String("error", err.Error()))
+		return nil, err
+	}
+	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		logger.Error("Error while migration up", slog.String("error", err.Error()))
+		return nil, err
+	}
+	logger.Info("Migration complete!")
+
+	return conn, nil
 }
