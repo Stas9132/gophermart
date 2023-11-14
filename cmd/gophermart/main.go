@@ -22,8 +22,12 @@ var (
 
 func run(c *config.Config) {
 	log.Println("Server starting")
-	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal(err)
+	if err := server.ListenAndServe(); err != nil {
+		if errors.Is(err, http.ErrServerClosed) {
+			log.Println(err)
+		} else {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -63,8 +67,11 @@ func mRouter(handler *api.Handler) {
 	r := mux.NewRouter()
 
 	//r.Use(handler.LoggingMiddleware, gzip.GzipMiddleware, handler.HashSHA256Middleware)
+	r.Use(api.Authorization)
 
-	r.HandleFunc("/test", handler.Test).Methods("GET")
+	r.HandleFunc("/api/user/test", handler.Test).Methods(http.MethodGet)
+	r.HandleFunc("/api/user/register", handler.Register).Methods(http.MethodPost)
+	r.HandleFunc("/api/user/login", handler.Login).Methods(http.MethodPost)
 
 	http.Handle("/", r)
 }
