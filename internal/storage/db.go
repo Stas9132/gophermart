@@ -2,23 +2,32 @@ package storage
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"github.com/golang-migrate/migrate"
+	_ "github.com/golang-migrate/migrate/database/postgres"
+	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
+	"log/slog"
 )
 
 type DBStorage struct {
 	appCtx context.Context
 	logger.Logger
+	conn *pgx.Conn
 }
 
 func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logger) (*DBStorage, error) {
-	createDB(config.DatabaseURI)
+	conn, err := createDB(config.DatabaseURI, logger)
+	if err != nil {
+		return nil, err
+	}
 	return &DBStorage{
 		appCtx: ctx,
 		Logger: logger,
+		conn:   conn,
 	}, nil
 }
 
@@ -26,32 +35,24 @@ func (s *DBStorage) Close() error {
 	return nil
 }
 
-func createDB(DBConn string) {
+func createDB(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
 	conn, err := pgx.Connect(context.Background(), DBConn)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	fmt.Println("Successfully connected to the database!")
+	logger.Info("Successfully connected to the database!", slog.String("DSN", DBConn))
 
-	var tableExists bool
-	err = conn.QueryRow(context.Background(), "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = $1)", "users").Scan(&tableExists)
+	m, err := migrate.New("file://internal/storage/migration/", DBConn)
 	if err != nil {
-		panic(err)
+		logger.Error("Error while create migration", slog.String("error", err.Error()))
+		return nil, err
 	}
+	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		logger.Error("Error while migration up", slog.String("error", err.Error()))
+		return nil, err
+	}
+	logger.Info("Migration complete!")
 
-	if !tableExists {
-		_, err = conn.Exec(context.Background(), `CREATE TABLE users (
-	   id SERIAL PRIMARY KEY,
-	   name VARCHAR(50),
-	   email VARCHAR(50),
-	   password VARCHAR(50)
-	);`)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println("Table 'users' created.")
-	} else {
-		fmt.Println("Table 'users' already exist.")
-	}
+	return conn, nil
 }
