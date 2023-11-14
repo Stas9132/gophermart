@@ -21,10 +21,10 @@ var (
 )
 
 func run(c *config.Config) {
+	log.Println("Server starting")
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
-	log.Println("Server starting")
 }
 
 func main() {
