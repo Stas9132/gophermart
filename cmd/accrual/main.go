@@ -71,6 +71,6 @@ func mRouter(handler *api.Handler) {
 
 	r.HandleFunc("/api/goods", handler.AccrualGoods).Methods(http.MethodPost)
 	r.HandleFunc("/api/orders", handler.AccrualOrders).Methods(http.MethodPost)
-
+	r.HandleFunc("/api/orders/{number}", handler.AccrualGetOrders).Methods(http.MethodGet)
 	http.Handle("/", r)
 }
