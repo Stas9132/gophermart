@@ -11,6 +11,7 @@ import (
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
 	"log/slog"
+	"time"
 )
 
 type DBStorage struct {
@@ -55,4 +56,19 @@ func createDB(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
 	logger.Info("Migration complete!")
 
 	return conn, nil
+}
+
+type Order struct {
+	Number     string
+	Status     string
+	Accrual    int
+	UploadedAt time.Time
+}
+
+func (s *DBStorage) NewOrder(order Order) error {
+	if _, err := s.conn.Exec(s.appCtx, "INSERT INTO orders(number, status, uploaded_at) values ($1,'NEW' ,$2)", order.Number, time.Now()); err != nil {
+		s.Error("NewOrder() error", slog.String("error", err.Error()))
+		return err
+	}
+	return nil
 }
