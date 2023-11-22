@@ -10,7 +10,6 @@ import (
 	_ "github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/shopspring/decimal"
-	"gophermart/internal/accural/models"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
 	"log/slog"
@@ -27,17 +26,17 @@ func (D DBStorage) Close() error {
 	panic("implement me")
 }
 
-func (D DBStorage) AcceptOrder(discounts []models.Discount) error {
+func (D DBStorage) AcceptOrder(discounts []Discount) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (D DBStorage) AcceptDiscount(discounts []models.Discount) error {
+func (D DBStorage) AcceptDiscount(discounts []Discount) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (D DBStorage) CalculateDiscount(ds []models.Discount) (decimal.Decimal, error) {
+func (D DBStorage) CalculateDiscount(ds []Discount) (decimal.Decimal, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -79,4 +78,10 @@ func newMigrate(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
 	logger.Info("Migration complete!")
 
 	return conn, nil
+}
+
+type Discount struct {
+	Match       string
+	Reward      decimal.Decimal
+	Reward_type string
 }

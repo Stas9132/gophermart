@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/models"
+	"gophermart/internal/accural/storage"
 	"gophermart/internal/logger"
 	"io"
 	"net/http"
@@ -12,9 +13,9 @@ import (
 
 type StorageAccural interface {
 	io.Closer
-	AcceptOrder(discounts []models.Discount) error
-	AcceptDiscount(discounts []models.Discount) error
-	CalculateDiscount(ds []models.Discount) (decimal.Decimal, error)
+	AcceptOrder(discounts []storage.Discount) error
+	AcceptDiscount(discounts []storage.Discount) error
+	CalculateDiscount(ds []storage.Discount) (decimal.Decimal, error)
 	GetCalculatedDiscountByOrderID(orderID int) (decimal.Decimal, error)
 }
 
@@ -37,7 +38,7 @@ func (h Handler) AccrualGoods(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var discount models.Discount
+	var discount storage.Discount
 	err := json.NewDecoder(r.Body).Decode(&discount)
 	if err != nil {
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)

@@ -20,11 +20,6 @@ type Good struct {
 	Description string          `json:"description"`
 	Price       decimal.Decimal `json:"price"`
 }
-type Discount struct {
-	match       string
-	reward      decimal.Decimal
-	reward_type string
-}
 
 func (om OrderManager) GetCalculatedDiscountByOrderID(orderId string) (decimal.Decimal, error) {
 	var result decimal.Decimal
@@ -56,9 +51,9 @@ func (om OrderManager) AcceptOrder(order Order) error {
 
 	return nil
 }
-func (om OrderManager) AcceptDiscount(discount Discount) error {
+func (om OrderManager) AcceptDiscount(discount storage.Discount) error {
 
-	_, err := om.db.Conn.Exec(context.Background(), "INSERT INTO discounts (match, reward, reward_type) VALUES ($1, $2, $3)", discount.match, discount.reward, discount.reward_type)
+	_, err := om.db.Conn.Exec(context.Background(), "INSERT INTO discounts (match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.Reward_type)
 	if err != nil {
 		om.db.Logger.Error("unable insert into discounts table", slog.String("error", err.Error()), slog.String("AcceptDiscounts", "discount"))
 		return err
@@ -68,7 +63,7 @@ func (om OrderManager) AcceptDiscount(discount Discount) error {
 	return nil
 }
 
-func (om OrderManager) CalculateDiscount(discounts []Discount) (decimal.Decimal, error) {
+func (om OrderManager) CalculateDiscount(discounts []storage.Discount) (decimal.Decimal, error) {
 	var result decimal.Decimal
 	orders, err := om.GetAllOrders()
 	if err != nil {
@@ -77,14 +72,14 @@ func (om OrderManager) CalculateDiscount(discounts []Discount) (decimal.Decimal,
 	for _, o := range orders {
 		for _, g := range o.Goods {
 			for _, d := range discounts {
-				if !strings.Contains(g.Description, d.match) {
+				if !strings.Contains(g.Description, d.Match) {
 					continue
 				}
-				switch d.reward_type {
+				switch d.Reward_type {
 				case "%":
-					result = result.Add(g.Price.Mul(d.reward).Div(decimal.NewFromInt(100)))
+					result = result.Add(g.Price.Mul(d.Reward).Div(decimal.NewFromInt(100)))
 				case "pt":
-					result = result.Add(d.reward)
+					result = result.Add(d.Reward)
 				}
 			}
 		}
