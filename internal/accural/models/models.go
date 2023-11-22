@@ -53,7 +53,7 @@ func (om OrderManager) AcceptOrder(order Order) error {
 }
 func (om OrderManager) AcceptDiscount(discount storage.Discount) error {
 
-	_, err := om.db.Conn.Exec(context.Background(), "INSERT INTO discounts (match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.Reward_type)
+	_, err := om.db.Conn.Exec(context.Background(), "INSERT INTO discounts (match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.RewardType)
 	if err != nil {
 		om.db.Logger.Error("unable insert into discounts table", slog.String("error", err.Error()), slog.String("AcceptDiscounts", "discount"))
 		return err
@@ -75,7 +75,7 @@ func (om OrderManager) CalculateDiscount(discounts []storage.Discount) (decimal.
 				if !strings.Contains(g.Description, d.Match) {
 					continue
 				}
-				switch d.Reward_type {
+				switch d.RewardType {
 				case "%":
 					result = result.Add(g.Price.Mul(d.Reward).Div(decimal.NewFromInt(100)))
 				case "pt":

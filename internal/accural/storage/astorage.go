@@ -7,7 +7,6 @@ import (
 	_ "github.com/golang-migrate/migrate/database/postgres"
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jackc/pgx/v5"
-	_ "github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/config"
@@ -81,7 +80,7 @@ func newMigrate(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
 }
 
 type Discount struct {
-	Match       string
-	Reward      decimal.Decimal
-	Reward_type string
+	Match      string
+	Reward     decimal.Decimal
+	RewardType string
 }
