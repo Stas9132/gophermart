@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/storage"
+	"log"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -21,9 +22,12 @@ type Good struct {
 	Price       decimal.Decimal `json:"price"`
 }
 
-func (om OrderManager) GetCalculatedDiscountByOrderID(orderId string) (decimal.Decimal, error) {
+func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error) {
 	var result decimal.Decimal
-	id, err := strconv.Atoi(orderId)
+	id, err := strconv.Atoi(orderID)
+	if err != nil {
+		log.Println(err)
+	}
 
 	err = om.db.Conn.QueryRow(context.Background(), "SELECT SUM(discounts.reward) FROM discounts JOIN orders ON discounts.id = orders.discount_id WHERE orders.order_id = $1", id).Scan(&result)
 	if err != nil {
