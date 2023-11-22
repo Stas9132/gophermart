@@ -9,6 +9,7 @@ import (
 	"gophermart/internal/accural/storage"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,6 +28,7 @@ func main() {
 	l := logger.NewSlogLogger(c)
 	st, err := storage.NewDBStorageAccural(context.Background(), c, l)
 	if err != nil {
+		log.Println(err)
 
 	}
 	handler := api.NewAccuralHandler(st, l)
