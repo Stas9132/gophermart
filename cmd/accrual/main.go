@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
-	"gophermart/internal/api"
+	"gophermart/internal/accural/api"
+	"gophermart/internal/accural/storage"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
-	"gophermart/internal/storage"
 	"log"
 	"net/http"
 	"os"
@@ -17,50 +18,66 @@ import (
 )
 
 var (
-	server *http.Server
+	server       *http.Server
+	shutdownChan = make(chan struct{})
 )
 
-func run(c *config.Config) {
-	log.Println("Server starting")
-	if err := server.ListenAndServe(); err != nil {
-		if errors.Is(err, http.ErrServerClosed) {
-			log.Println(err)
-		} else {
-			log.Fatal(err)
-		}
-	}
-}
-
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
 
 	c := config.New()
 	l := logger.NewSlogLogger(c)
-	var err error
-	var st api.Storage
-	if st, err = storage.NewDBStorage(ctx, c, l); err != nil {
-		log.Fatal("storage open error", err)
+	st, err := storage.NewDBStorageAccural(context.Background(), c, l)
+	if err != nil {
+		log.Println(err)
+
 	}
-	h := api.NewHandler(st, l)
+	handler := api.NewAccuralHandler(st, l)
 
 	go func() {
-		mRouter(h)
-		server = &http.Server{Addr: c.Address}
-		run(c)
+		mRouter(handler)
+		if err := run(c); err != nil {
+			panic(err)
+		}
+	}()
+	go func() {
+		sigchan := make(chan os.Signal, 1)
+		signal.Notify(sigchan, os.Interrupt, syscall.SIGTERM)
+		<-sigchan
+
+		close(shutdownChan)
 	}()
 
-	<-ctx.Done()
-
-	if err = server.Close(); err != nil {
-		log.Println("server close error", err)
+	<-shutdownChan
+	defer st.Conn.Close(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		fmt.Printf("Ошибка при завершении работы сервера: %v\n", err)
 	}
-	if err = st.Close(); err != nil {
-		log.Println("storage close error", err)
-	}
 
-	time.Sleep(time.Second)
 	os.Exit(0)
+}
+
+func run(c *config.Config) error {
+	fmt.Printf("Сервер запущен на %v\n", c.Address)
+
+	server = &http.Server{Addr: c.Address}
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			panic(err)
+		}
+	}()
+
+	<-shutdownChan
+	fmt.Println("Завершение работы сервера...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		fmt.Printf("Ошибка при завершении работы сервера: %v\n", err)
+	}
+
+	return nil
 }
 
 func mRouter(handler *api.Handler) {
