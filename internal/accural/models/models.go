@@ -40,6 +40,7 @@ func (om OrderManager) AcceptOrder(order Order) error {
 	discounts, err := om.GetAllDiscounts()
 	dc, err := order.CalculateDiscount(discounts)
 	if err != nil {
+		om.db.Logger.Error("err calc discount", slog.String("error", err.Error()), slog.String("AcceptOrder", "discount"))
 		return err
 	}
 
