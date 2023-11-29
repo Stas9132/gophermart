@@ -38,6 +38,10 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 }
 func (om OrderManager) AcceptOrder(order Order) error {
 	discounts, err := om.GetAllDiscounts()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 	dc := order.CalculateDiscount(discounts)
 
 	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO discounts (id) VALUES ($1)", order.Order, dc)
