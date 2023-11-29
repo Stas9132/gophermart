@@ -3,6 +3,7 @@ module gophermart
 go 1.21.0
 
 require (
+	github.com/ShiraazMoollatjie/goluhn v0.0.0-20211017190329-0d86158c056a
 	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/gorilla/mux v1.8.1
 	github.com/shopspring/decimal v1.2.0
