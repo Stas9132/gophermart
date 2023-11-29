@@ -2,8 +2,6 @@ package storage
 
 import (
 	"context"
-	"errors"
-	"github.com/golang-migrate/migrate"
 	_ "github.com/golang-migrate/migrate/database/postgres"
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jackc/pgx/v5"
@@ -65,17 +63,17 @@ func newMigrate(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
 
 	logger.Info("Successfully connected to the database!", slog.String("DSN", DBConn))
 
-	m, err := migrate.New("file://internal/accural/storage/migrations/", DBConn)
-	if err != nil {
-		logger.Error("Error while create migration", slog.String("error", err.Error()))
-		return nil, err
-	}
-	m.Drop()
-	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		logger.Error("Error while migration up", slog.String("error", err.Error()))
-		return nil, err
-	}
-	logger.Info("Migration complete!")
+	//m, err := migrate.New("file://internal/accural/storage/migrations/", DBConn)
+	//if err != nil {
+	//	logger.Error("Error while create migration", slog.String("error", err.Error()))
+	//	return nil, err
+	//}
+	//m.Drop()
+	//if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+	//	logger.Error("Error while migration up", slog.String("error", err.Error()))
+	//	return nil, err
+	//}
+	//logger.Info("Migration complete!")
 
 	return conn, nil
 }
