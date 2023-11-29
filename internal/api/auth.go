@@ -32,6 +32,11 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if len(auth.Login) < 4 || len(auth.Password) < 4 {
+		http.Error(w, "invalid login/password", http.StatusBadRequest)
+		return
+	}
+
 	h.Info("Register request", slog.String("user", auth.Login))
 
 	if ok, err := h.storage.RegisterUser(auth); err != nil {
