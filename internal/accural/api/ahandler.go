@@ -46,7 +46,7 @@ func (h Handler) AccrualGoods(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
 	}
-	err = models.OrderManager{}.AcceptDiscount(discount)
+	err = h.om.AcceptDiscount(discount)
 	if err != nil {
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
@@ -68,7 +68,7 @@ func (h Handler) AccrualOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.OrderManager{}.AcceptOrder(orderData)
+	err = h.om.AcceptOrder(orderData)
 	if err != nil {
 		http.Error(w, "Order entry error", http.StatusInternalServerError)
 		return
@@ -82,7 +82,7 @@ func (h Handler) AccrualGetOrders(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	orderID := vars["number"]
 
-	discount, err := models.OrderManager{}.GetCalculatedDiscountByOrderID(orderID)
+	discount, err := h.om.GetCalculatedDiscountByOrderID(orderID)
 	if err != nil {
 		http.Error(w, "Failed to fetch discount for the order", http.StatusInternalServerError)
 		return
