@@ -49,9 +49,9 @@ func (om OrderManager) AcceptOrder(order Order) error {
 	}
 	dc := order.CalculateDiscount(discounts)
 
-	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO discounts (order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
+	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO order(order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
 	if err != nil {
-		om.db.Logger.Error("unable insert into orders table", slog.String("error", err.Error()), slog.String("AcceptOrder", "discounts"))
+		om.db.Logger.Error("unable insert into discounts table", slog.String("error", err.Error()), slog.String("AcceptOrder", "discounts"))
 		return err
 	}
 
@@ -59,7 +59,7 @@ func (om OrderManager) AcceptOrder(order Order) error {
 }
 func (om OrderManager) AcceptDiscount(discount storage.Discount) error {
 
-	_, err := om.db.Conn.Exec(context.Background(), "INSERT INTO discounts (match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.RewardType)
+	_, err := om.db.Conn.Exec(context.Background(), "INSERT INTO discounts(match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.RewardType)
 	if err != nil {
 		om.db.Logger.Error("unable insert into discounts table", slog.String("error", err.Error()), slog.String("AcceptDiscounts", "discount"))
 		return err
