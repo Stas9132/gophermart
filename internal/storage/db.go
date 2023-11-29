@@ -43,11 +43,12 @@ func createDB(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
 
 	logger.Info("Successfully connected to the database!", slog.String("DSN", DBConn))
 
-	m, err := migrate.New("file://internal/storage/migration/", DBConn)
+	m, err := migrate.New("file://internal/storage/migration", DBConn)
 	if err != nil {
 		logger.Error("Error while create migration", slog.String("error", err.Error()))
 		return nil, err
 	}
+	m.Drop()
 	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		logger.Error("Error while migration up", slog.String("error", err.Error()))
 		return nil, err
