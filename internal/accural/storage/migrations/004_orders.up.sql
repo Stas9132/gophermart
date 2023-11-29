@@ -1,6 +1,6 @@
 -- +migrate Up
 
-CREATE TABLE discounts
+CREATE TABLE IF NOT EXISTS discounts
 (
     id          SERIAL PRIMARY KEY,
     match       TEXT,
@@ -8,7 +8,7 @@ CREATE TABLE discounts
     reward_type TEXT
 );
 
-CREATE TABLE orders
+CREATE TABLE IF NOT EXISTS orders
 (
     id          SERIAL PRIMARY KEY,
     order_id    VARCHAR(255),

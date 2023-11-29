@@ -1,6 +1,6 @@
 -- +migrate Up
 
-CREATE TABLE discounts
+CREATE TABLE IF NOT EXISTS discounts
 (
     id          SERIAL PRIMARY KEY,
     match       TEXT,
