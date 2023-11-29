@@ -2,6 +2,7 @@
 
 CREATE TABLE orders
 (
-    order_id    SERIAL PRIMARY KEY,
+    id          SERIAL PRIMARY KEY,
+    order_id    VARCHAR(255),
     discount_id INT REFERENCES discounts (id)
 );
