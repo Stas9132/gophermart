@@ -11,8 +11,13 @@ import (
 )
 
 type OrderManager struct {
-	db storage.DBStorage
+	db *storage.DBStorage
 }
+
+func NewOrderManager(db *storage.DBStorage) *OrderManager {
+	return &OrderManager{db: db}
+}
+
 type Order struct {
 	Order string `json:"Order"`
 	Goods []Good `json:"goods"`

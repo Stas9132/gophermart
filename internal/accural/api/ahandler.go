@@ -22,12 +22,14 @@ type StorageAccural interface {
 type Handler struct {
 	storage StorageAccural
 	logger.Logger
+	om *models.OrderManager
 }
 
-func NewAccuralHandler(storage StorageAccural, logger logger.Logger) *Handler {
+func NewAccuralHandler(storage *storage.DBStorage, logger logger.Logger) *Handler {
 	return &Handler{
 		storage: storage,
 		Logger:  logger,
+		om:      models.NewOrderManager(storage),
 	}
 
 }
