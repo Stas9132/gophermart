@@ -32,11 +32,13 @@ func (h *Handler) Test(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+
 }
 
 func (h *Handler) GetBalance(w http.ResponseWriter, r *http.Request) {
