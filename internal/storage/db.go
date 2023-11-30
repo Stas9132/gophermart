@@ -23,6 +23,9 @@ type DBStorage struct {
 
 func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logger) (*DBStorage, error) {
 	conn, err := createDB(config.DatabaseURI, logger)
+	if err != nil {
+		return nil, err
+	}
 	rows, err := conn.Query(ctx, "select number, status, accrual, uploaded_at, issuer from orders")
 	if err != nil {
 		logger.Error("select request error", slog.String("error", err.Error()))
