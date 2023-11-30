@@ -18,7 +18,9 @@ CREATE TABLE IF NOT EXISTS discounts
     reward_type TEXT
 );
 
-CREATE TABLE IF NOT EXISTS order (
+CREATE TABLE IF NOT EXISTS orders
+(
+    id SERIAL PRIMARY KEY ,
                        number TEXT NOT NULL,
                        status TEXT NOT NULL,
                        accrual INT,
