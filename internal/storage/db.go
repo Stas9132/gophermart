@@ -8,8 +8,10 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"gophermart/internal/api"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
+	"log"
 	"log/slog"
 	"time"
 )
@@ -66,7 +68,8 @@ type Order struct {
 	UploadedAt time.Time
 }
 
-func (s *DBStorage) NewOrder(order Order) error {
+func (s *DBStorage) NewOrder(ctx context.Context, order Order) error {
+	log.Println(api.GetIssuer(ctx))
 	if _, err := s.conn.Exec(s.appCtx, "INSERT INTO orders(number, status, uploaded_at) values ($1,'NEW' ,$2)", order.Number, time.Now()); err != nil {
 		s.Error("NewOrder() error", slog.String("error", err.Error()))
 		return err
