@@ -43,7 +43,9 @@ func (h *Handler) Test(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 	var user string
 	var order []byte
-	defer h.Info("POST /api/user/order request", slog.String("user", user), slog.String("order", string(order)))
+	defer func() {
+		h.Info("POST /api/user/order request", slog.String("user", user), slog.String("order", string(order)))
+	}()
 
 	if r.Header.Get("Content-Type") != "text/plain" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -83,12 +85,13 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
-	user := new(string)
-	defer h.Info("GET /api/user/orders request", slog.String("user", *user))
-
+	var user string
+	defer func() {
+		h.Info("GET /api/user/orders request", slog.String("user", user))
+	}()
 	w.Header().Set("Content-Type", "application/json")
-	*user = auth.GetIssuer(r.Context())
-	if *user == "" {
+	user = auth.GetIssuer(r.Context())
+	if user == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
