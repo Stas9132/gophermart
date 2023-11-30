@@ -25,22 +25,24 @@ func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logg
 	conn, err := createDB(config.DatabaseURI, logger)
 	rows, err := conn.Query(ctx, "select number, status, accrual, uploaded_at, issuer from orders")
 	if err != nil {
+		logger.Error("select request error", slog.String("error", err.Error()))
 		return nil, err
 	}
 	m := make(map[string]*Order)
 	for rows.Next() {
 		var order Order
-		rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.UploadedAt, &order.Issuer)
+		err = rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.UploadedAt, &order.Issuer)
 		m[order.Number] = &order
-	}
-	if err != nil {
-		return nil, err
+		if err != nil {
+			logger.Error("scan error", slog.String("error", err.Error()))
+			return nil, err
+		}
 	}
 	return &DBStorage{
 		appCtx: ctx,
 		Logger: logger,
 		conn:   conn,
-		m:      make(map[string]*Order),
+		m:      m,
 	}, nil
 }
 
