@@ -8,7 +8,6 @@ import (
 	"gophermart/internal/logger"
 	"gophermart/internal/storage"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
 	"sort"
@@ -73,8 +72,8 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 		Status:     "NEW",
 		Accrual:    0,
 		UploadedAt: time.Now(),
+		Issuer:     auth.GetIssuer(r.Context()),
 	})
-	log.Println(err, h.storage)
 
 	if errors.Is(err, storage.ErrSameUser) {
 		w.WriteHeader(http.StatusOK)
