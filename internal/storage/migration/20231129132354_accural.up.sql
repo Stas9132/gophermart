@@ -20,7 +20,10 @@ CREATE TABLE IF NOT EXISTS discounts
 
 CREATE TABLE IF NOT EXISTS orders
 (
-    id          SERIAL PRIMARY KEY,
-    order_id    VARCHAR(255),
-    discount_id INT
+    id SERIAL PRIMARY KEY ,
+                       number TEXT NOT NULL,
+                       status TEXT NOT NULL,
+                       accrual INT,
+                       uploaded_at TIMESTAMP WITH TIME ZONE NOT NULL,
+                       issuer TEXT
 );

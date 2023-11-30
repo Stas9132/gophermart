@@ -11,12 +11,14 @@ import (
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
 	"log/slog"
+	"time"
 )
 
 type DBStorage struct {
 	appCtx context.Context
 	logger.Logger
 	conn *pgx.Conn
+	m    map[string]*Order
 }
 
 func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logger) (*DBStorage, error) {
@@ -24,10 +26,26 @@ func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logg
 	if err != nil {
 		return nil, err
 	}
+	rows, err := conn.Query(ctx, "select number, status, accrual, uploaded_at, issuer from orders")
+	if err != nil {
+		logger.Error("select request error", slog.String("error", err.Error()))
+		return nil, err
+	}
+	m := make(map[string]*Order)
+	for rows.Next() {
+		var order Order
+		err = rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.UploadedAt, &order.Issuer)
+		m[order.Number] = &order
+		if err != nil {
+			logger.Error("scan error", slog.String("error", err.Error()))
+			return nil, err
+		}
+	}
 	return &DBStorage{
 		appCtx: ctx,
 		Logger: logger,
 		conn:   conn,
+		m:      m,
 	}, nil
 }
 
@@ -56,4 +74,42 @@ func createDB(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
 	logger.Info("Migration complete!")
 
 	return conn, nil
+}
+
+var ErrSameUser = errors.New("already in base")
+var ErrAnotherUser = errors.New("conflict")
+
+type Order struct {
+	Number     string    `json:"number"`
+	Status     string    `json:"status"`
+	Accrual    int       `json:"accrual,omitempty"`
+	UploadedAt time.Time `json:"uploaded_at"`
+	Issuer     string    `json:"-"`
+}
+
+func (s *DBStorage) NewOrder(order Order) error {
+
+	if v, ok := s.m[order.Number]; ok {
+		if order.Issuer == v.Issuer {
+			return ErrSameUser
+		}
+		return ErrAnotherUser
+	}
+
+	s.m[order.Number] = &order
+
+	if _, err := s.conn.Exec(s.appCtx, "INSERT INTO orders (number, status, accrual, uploaded_at, issuer) VALUES ($1,$2,$3,$4,$5);", order.Number, order.Status, order.Accrual, order.UploadedAt, order.Issuer); err != nil {
+		s.Error("NewOrder() error", slog.String("error", err.Error()))
+		return err
+	}
+
+	return nil
+}
+
+func (s *DBStorage) GetOrders() ([]Order, error) {
+	res := make([]Order, 0, len(s.m))
+	for _, order := range s.m {
+		res = append(res, *order)
+	}
+	return res, nil
 }

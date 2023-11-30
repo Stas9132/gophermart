@@ -1,28 +1,15 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"github.com/golang-jwt/jwt/v5"
+	auth2 "gophermart/internal/auth"
 	"gophermart/internal/storage"
 	"log/slog"
 	"net/http"
 	"time"
 )
 
-type issuer struct {
-}
-
-func GetIssuer(ctx context.Context) string {
-	s, ok := ctx.Value(issuer{}).(string)
-	if !ok {
-		return ""
-	}
-	return s
-}
-
-const key = "secret_key"
 const TTL = time.Hour
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +38,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 
 	j, err := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{"iss": auth.Login, "exp": time.Now().Add(TTL).Unix()},
-	).SignedString([]byte(key))
+	).SignedString([]byte(auth2.Key))
 	if err != nil {
 		h.Error("create jwt error", slog.String("error", err.Error()))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -88,7 +75,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	j, err := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{"iss": auth.Login, "exp": time.Now().Add(TTL).Unix()},
-	).SignedString([]byte(key))
+	).SignedString([]byte(auth2.Key))
 	if err != nil {
 		h.Error("create jwt error", slog.String("error", err.Error()))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -102,32 +89,4 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func Authorization(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		j := r.Header.Get("Authorization")
-		if c, err := r.Cookie("Authorization"); err == nil {
-			j = c.Value
-		}
-
-		t, err := jwt.ParseWithClaims(j, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
-			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errors.New("unexpected signed method")
-			}
-			return []byte(key), nil
-		})
-		if err != nil {
-			goto lNext
-		}
-
-		if c, ok := t.Claims.(*jwt.MapClaims); ok && t.Valid {
-			if u, ok := (*c)["iss"].(string); ok {
-				ctx = context.WithValue(ctx, issuer{}, u)
-			}
-		}
-	lNext:
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
 }
