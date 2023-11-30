@@ -83,12 +83,12 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
-	var user string
-	defer h.Info("GET /api/user/orders request", slog.String("user", user))
+	user := new(string)
+	defer h.Info("GET /api/user/orders request", slog.String("user", *user))
 
 	w.Header().Set("Content-Type", "application/json")
-	user = auth.GetIssuer(r.Context())
-	if user == "" {
+	*user = auth.GetIssuer(r.Context())
+	if *user == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
