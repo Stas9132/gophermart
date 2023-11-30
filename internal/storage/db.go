@@ -8,10 +8,8 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"gophermart/internal/auth"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
-	"log"
 	"log/slog"
 	"time"
 )
@@ -20,6 +18,7 @@ type DBStorage struct {
 	appCtx context.Context
 	logger.Logger
 	conn *pgx.Conn
+	m    map[string]*Order
 }
 
 func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logger) (*DBStorage, error) {
@@ -31,6 +30,7 @@ func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logg
 		appCtx: ctx,
 		Logger: logger,
 		conn:   conn,
+		m:      make(map[string]*Order),
 	}, nil
 }
 
@@ -61,18 +61,29 @@ func createDB(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
 	return conn, nil
 }
 
+var ErrSameUser = errors.New("already in base")
+var ErrAnotherUser = errors.New("conflict")
+
 type Order struct {
 	Number     string
 	Status     string
 	Accrual    int
 	UploadedAt time.Time
+	Issuer     string
 }
 
-func (s *DBStorage) NewOrder(ctx context.Context, order Order) error {
-	log.Println(auth.GetIssuer(ctx))
-	if _, err := s.conn.Exec(s.appCtx, "INSERT INTO orders(number, status, uploaded_at) values ($1,'NEW' ,$2)", order.Number, time.Now()); err != nil {
-		s.Error("NewOrder() error", slog.String("error", err.Error()))
-		return err
+func (s *DBStorage) NewOrder(order Order) error {
+	if v, ok := s.m[order.Number]; ok {
+		if order.Issuer == v.Issuer {
+			return ErrSameUser
+		}
+		return ErrAnotherUser
 	}
+	s.m[order.Number] = &order
+
+	//if _, err := s.conn.Exec(s.appCtx, "INSERT INTO orders(number, status, uploaded_at) values ($1,'NEW' ,$2)", order.Number, time.Now()); err != nil {
+	//	s.Error("NewOrder() error", slog.String("error", err.Error()))
+	//	return err
+	//}
 	return nil
 }

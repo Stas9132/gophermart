@@ -1,7 +1,7 @@
 package api
 
 import (
-	"context"
+	"errors"
 	"github.com/ShiraazMoollatjie/goluhn"
 	"gophermart/internal/auth"
 	"gophermart/internal/logger"
@@ -15,7 +15,7 @@ type Storage interface {
 	io.Closer
 	RegisterUser(auth storage.Auth) (bool, error)
 	LoginUser(auth storage.Auth) (bool, error)
-	NewOrder(ctx context.Context, order storage.Order) error
+	NewOrder(order storage.Order) error
 }
 
 type Handler struct {
@@ -57,16 +57,21 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	h.storage.NewOrder(r.Context(), storage.Order{
+	err = h.storage.NewOrder(storage.Order{
 		Number:     string(order),
 		Status:     "NEW",
 		Accrual:    0,
 		UploadedAt: time.Now(),
 	})
 
-	//http.StatusAccepted
-	//http.StatusConflict
-	w.WriteHeader(http.StatusOK)
+	if errors.Is(err, storage.ErrSameUser) {
+		w.WriteHeader(http.StatusOK)
+		return
+	} else if errors.Is(err, storage.ErrAnotherUser) {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
