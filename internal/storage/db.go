@@ -65,11 +65,11 @@ var ErrSameUser = errors.New("already in base")
 var ErrAnotherUser = errors.New("conflict")
 
 type Order struct {
-	Number     string
-	Status     string
-	Accrual    int
-	UploadedAt time.Time
-	Issuer     string
+	Number     string    `json:"number"`
+	Status     string    `json:"status"`
+	Accrual    int       `json:"accrual,omitempty"`
+	UploadedAt time.Time `json:"uploaded_at"`
+	Issuer     string    `json:"-"`
 }
 
 func (s *DBStorage) NewOrder(order Order) error {
@@ -86,4 +86,12 @@ func (s *DBStorage) NewOrder(order Order) error {
 	//	return err
 	//}
 	return nil
+}
+
+func (s *DBStorage) GetOrders() ([]Order, error) {
+	res := make([]Order, 0, len(s.m))
+	for _, order := range s.m {
+		res = append(res, *order)
+	}
+	return res, nil
 }

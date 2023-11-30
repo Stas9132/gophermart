@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/ShiraazMoollatjie/goluhn"
 	"gophermart/internal/auth"
@@ -8,6 +9,7 @@ import (
 	"gophermart/internal/storage"
 	"io"
 	"net/http"
+	"sort"
 	"time"
 )
 
@@ -16,6 +18,7 @@ type Storage interface {
 	RegisterUser(auth storage.Auth) (bool, error)
 	LoginUser(auth storage.Auth) (bool, error)
 	NewOrder(order storage.Order) error
+	GetOrders() ([]storage.Order, error)
 }
 
 type Handler struct {
@@ -75,6 +78,32 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
+	user := auth.GetIssuer(r.Context())
+	if user == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	ordrs, err := h.storage.GetOrders()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	sort.SliceStable(ordrs, func(i, j int) bool {
+		return ordrs[i].UploadedAt.Before(ordrs[j].UploadedAt)
+	})
+
+	if err = json.NewEncoder(w).Encode(ordrs); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(ordrs) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
