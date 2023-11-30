@@ -42,7 +42,7 @@ func Authorization(next http.Handler) http.Handler {
 			}
 		}
 	lNext:
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r.WithContext(context.WithoutCancel(ctx)))
 	})
 }
 
