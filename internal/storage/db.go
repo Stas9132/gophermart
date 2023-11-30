@@ -73,18 +73,21 @@ type Order struct {
 }
 
 func (s *DBStorage) NewOrder(order Order) error {
+
 	if v, ok := s.m[order.Number]; ok {
 		if order.Issuer == v.Issuer {
 			return ErrSameUser
 		}
 		return ErrAnotherUser
 	}
+
 	s.m[order.Number] = &order
 
-	//if _, err := s.conn.Exec(s.appCtx, "INSERT INTO orders(number, status, uploaded_at) values ($1,'NEW' ,$2)", order.Number, time.Now()); err != nil {
-	//	s.Error("NewOrder() error", slog.String("error", err.Error()))
-	//	return err
-	//}
+	if _, err := s.conn.Exec(s.appCtx, "INSERT INTO order (number, status, accrual, uploaded_at, issuer) VALUES ($1,$2,$3,$4,$5);", order.Number, order.Status, order.Accrual, order.UploadedAt, order.Issuer); err != nil {
+		s.Error("NewOrder() error", slog.String("error", err.Error()))
+		return err
+	}
+
 	return nil
 }
 
