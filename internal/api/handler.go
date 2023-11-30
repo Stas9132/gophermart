@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"github.com/ShiraazMoollatjie/goluhn"
+	"gophermart/internal/auth"
 	"gophermart/internal/logger"
 	"gophermart/internal/storage"
 	"io"
@@ -32,7 +33,7 @@ func NewHandler(storage Storage, logger logger.Logger) *Handler {
 
 func (h *Handler) Test(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(GetIssuer(r.Context())))
+	w.Write([]byte(auth.GetIssuer(r.Context())))
 }
 
 func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +41,7 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user := GetIssuer(r.Context())
+	user := auth.GetIssuer(r.Context())
 	if user == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
