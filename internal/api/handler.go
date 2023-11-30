@@ -95,17 +95,17 @@ func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		return ordrs[i].UploadedAt.Before(ordrs[j].UploadedAt)
 	})
 
-	if err = json.NewEncoder(w).Encode(ordrs); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	if len(ordrs) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+
+	if err = json.NewEncoder(w).Encode(ordrs); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *Handler) GetBalance(w http.ResponseWriter, r *http.Request) {
