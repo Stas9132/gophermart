@@ -8,7 +8,6 @@ import (
 	"gophermart/internal/logger"
 	"gophermart/internal/storage"
 	"io"
-	"log/slog"
 	"net/http"
 	"sort"
 	"time"
@@ -27,10 +26,10 @@ type Handler struct {
 	logger.Logger
 }
 
-func NewHandler(storage Storage, logger logger.Logger) *Handler {
+func NewHandler(storage Storage, l logger.Logger) *Handler {
 	return &Handler{
 		storage: storage,
-		Logger:  logger,
+		Logger:  l,
 	}
 
 }
@@ -44,7 +43,7 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 	var user string
 	var order []byte
 	defer func() {
-		h.Info("POST /api/user/order request", slog.String("user", user), slog.String("order", string(order)))
+		h.Info("POST /api/user/order request", logger.LogMap{"user": user, "order": string(order)})
 	}()
 
 	if r.Header.Get("Content-Type") != "text/plain" {
@@ -88,7 +87,7 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	var user string
 	defer func() {
-		h.Info("GET /api/user/orders request", slog.String("user", user))
+		h.Info("GET /api/user/orders request", logger.LogMap{"user": user})
 	}()
 	w.Header().Set("Content-Type", "application/json")
 	user = auth.GetIssuer(r.Context())

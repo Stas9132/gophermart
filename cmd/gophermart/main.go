@@ -78,7 +78,7 @@ func mRouter(handler *api.Handler) {
 	r.HandleFunc("/api/user/orders", handler.GetOrders).Methods(http.MethodGet)
 	r.HandleFunc("/api/user/balance", handler.GetBalance).Methods(http.MethodGet)
 	r.HandleFunc("/api/user/balance/withdraw", handler.PostBalanceWithdraw).Methods(http.MethodPost)
-	r.HandleFunc("/api/user/withdrawals", handler.Login).Methods(http.MethodGet)
+	r.HandleFunc("/api/user/withdrawals", handler.GetWithdraw).Methods(http.MethodGet)
 
 	http.Handle("/", r)
 }

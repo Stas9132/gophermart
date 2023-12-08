@@ -9,26 +9,25 @@ import (
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"gophermart/internal/config"
-	"gophermart/internal/logger"
-	"log/slog"
+	l2 "gophermart/internal/logger"
 	"time"
 )
 
 type DBStorage struct {
 	appCtx context.Context
-	logger.Logger
+	l2.Logger
 	conn *pgx.Conn
 	m    map[string]*Order
 }
 
-func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logger) (*DBStorage, error) {
+func NewDBStorage(ctx context.Context, config *config.Config, logger l2.Logger) (*DBStorage, error) {
 	conn, err := createDB(config.DatabaseURI, logger)
 	if err != nil {
 		return nil, err
 	}
 	rows, err := conn.Query(ctx, "select number, status, accrual, uploaded_at, issuer from orders")
 	if err != nil {
-		logger.Error("select request error", slog.String("error", err.Error()))
+		logger.Error("select request error", l2.LogMap{"error": err})
 		return nil, err
 	}
 	m := make(map[string]*Order)
@@ -37,7 +36,7 @@ func NewDBStorage(ctx context.Context, config *config.Config, logger logger.Logg
 		err = rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.UploadedAt, &order.Issuer)
 		m[order.Number] = &order
 		if err != nil {
-			logger.Error("scan error", slog.String("error", err.Error()))
+			logger.Error("scan error", l2.LogMap{"error": err})
 			return nil, err
 		}
 	}
@@ -53,22 +52,22 @@ func (s *DBStorage) Close() error {
 	return nil
 }
 
-func createDB(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
+func createDB(DBConn string, logger l2.Logger) (*pgx.Conn, error) {
 	conn, err := pgx.Connect(context.Background(), DBConn)
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Info("Successfully connected to the database!", slog.String("DSN", DBConn))
+	logger.Info("Successfully connected to the database!", l2.LogMap{"DSN": DBConn})
 
 	m, err := migrate.New("file://internal/storage/migration", DBConn)
 	if err != nil {
-		logger.Error("Error while create migration", slog.String("error", err.Error()))
+		logger.Error("Error while create migration", l2.LogMap{"error": err})
 		return nil, err
 	}
 	m.Drop()
 	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		logger.Error("Error while migration up", slog.String("error", err.Error()))
+		logger.Error("Error while migration up", l2.LogMap{"error": err})
 		return nil, err
 	}
 	logger.Info("Migration complete!")
@@ -99,7 +98,7 @@ func (s *DBStorage) NewOrder(order Order) error {
 	s.m[order.Number] = &order
 
 	if _, err := s.conn.Exec(s.appCtx, "INSERT INTO orders (number, status, accrual, uploaded_at, issuer) VALUES ($1,$2,$3,$4,$5);", order.Number, order.Status, order.Accrual, order.UploadedAt, order.Issuer); err != nil {
-		s.Error("NewOrder() error", slog.String("error", err.Error()))
+		s.Error("NewOrder() error", l2.LogMap{"error": err})
 		return err
 	}
 

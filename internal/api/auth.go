@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/golang-jwt/jwt/v5"
 	auth2 "gophermart/internal/auth"
+	"gophermart/internal/logger"
 	"gophermart/internal/storage"
-	"log/slog"
 	"net/http"
 	"time"
 )
@@ -15,7 +15,7 @@ const TTL = time.Hour
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	var auth storage.Auth
 	if err := json.NewDecoder(r.Body).Decode(&auth); err != nil {
-		h.Error("json decode error", slog.String("error", err.Error()))
+		h.Error("json decode error", logger.LogMap{"error": err})
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -24,14 +24,14 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.Info("Register request", slog.String("user", auth.Login))
+	h.Info("Register request", logger.LogMap{"user": auth.Login})
 
 	if ok, err := h.storage.RegisterUser(auth); err != nil {
-		h.Error("storage: register user error", slog.String("error", err.Error()))
+		h.Error("storage: register user error", logger.LogMap{"error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} else if !ok {
-		h.Warn("storage: unable create user", slog.String("user", auth.Login))
+		h.Warn("storage: unable create user", logger.LogMap{"user": auth.Login})
 		http.Error(w, "User already exist", http.StatusConflict)
 		return
 	}
@@ -40,7 +40,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		jwt.MapClaims{"iss": auth.Login, "exp": time.Now().Add(TTL).Unix()},
 	).SignedString([]byte(auth2.Key))
 	if err != nil {
-		h.Error("create jwt error", slog.String("error", err.Error()))
+		h.Error("create jwt error", logger.LogMap{"error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -57,18 +57,18 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var auth storage.Auth
 	if err := json.NewDecoder(r.Body).Decode(&auth); err != nil {
-		h.Error("json decode error", slog.String("error", err.Error()))
+		h.Error("json decode error", logger.LogMap{"error": err})
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	h.Info("Login request", slog.String("user", auth.Login))
+	h.Info("Login request", logger.LogMap{"user": auth.Login})
 
 	if ok, err := h.storage.LoginUser(auth); err != nil {
-		h.Error("storage: logon user error", slog.String("error", err.Error()))
+		h.Error("storage: logon user error", logger.LogMap{"user": auth.Login, "error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} else if !ok {
-		h.Warn("authentication failed", slog.String("user", auth.Login))
+		h.Warn("authentication failed", logger.LogMap{"user": auth.Login})
 		http.Error(w, "Authentication failed", http.StatusUnauthorized)
 		return
 	}
@@ -77,7 +77,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		jwt.MapClaims{"iss": auth.Login, "exp": time.Now().Add(TTL).Unix()},
 	).SignedString([]byte(auth2.Key))
 	if err != nil {
-		h.Error("create jwt error", slog.String("error", err.Error()))
+		h.Error("create jwt error", logger.LogMap{"error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

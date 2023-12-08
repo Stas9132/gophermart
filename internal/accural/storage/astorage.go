@@ -9,7 +9,6 @@ import (
 	"github.com/shopspring/decimal"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
-	"log/slog"
 )
 
 type DBStorage struct {
@@ -55,13 +54,13 @@ func NewDBStorageAccural(ctx context.Context, config *config.Config, logger logg
 	}, nil
 }
 
-func newMigrate(DBConn string, logger logger.Logger) (*pgx.Conn, error) {
+func newMigrate(DBConn string, l logger.Logger) (*pgx.Conn, error) {
 	conn, err := pgx.Connect(context.Background(), DBConn)
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Info("Successfully connected to the database!", slog.String("DSN", DBConn))
+	l.Info("Successfully connected to the database!", logger.LogMap{"DSN": DBConn})
 
 	//m, err := migrate.New("file://internal/accural/storage/migrations/", DBConn)
 	//if err != nil {

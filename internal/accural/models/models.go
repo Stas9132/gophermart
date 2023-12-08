@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/storage"
+	"gophermart/internal/logger"
 	"log"
-	"log/slog"
 	"strconv"
 	"strings"
 )
@@ -51,7 +51,7 @@ func (om OrderManager) AcceptOrder(order Order) error {
 
 	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO order(order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
 	if err != nil {
-		om.db.Logger.Error("unable insert into discounts table", slog.String("error", err.Error()), slog.String("AcceptOrder", "discounts"))
+		om.db.Logger.Error("unable insert into discounts table", logger.LogMap{"error": err, "AcceptOrder": "discounts"})
 		return err
 	}
 
@@ -61,7 +61,7 @@ func (om OrderManager) AcceptDiscount(discount storage.Discount) error {
 
 	_, err := om.db.Conn.Exec(context.Background(), "INSERT INTO discounts(match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.RewardType)
 	if err != nil {
-		om.db.Logger.Error("unable insert into discounts table", slog.String("error", err.Error()), slog.String("AcceptDiscounts", "discount"))
+		om.db.Logger.Error("unable insert into discounts table", logger.LogMap{"error": err, "AcceptDiscounts": "discount"})
 		return err
 	}
 
