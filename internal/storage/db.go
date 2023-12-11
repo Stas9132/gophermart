@@ -8,6 +8,7 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"gophermart/internal/auth"
 	"gophermart/internal/config"
 	l2 "gophermart/internal/logger"
 	"log"
@@ -108,8 +109,11 @@ func (s *DBStorage) NewOrder(ctx context.Context, order Order) error {
 
 func (s *DBStorage) GetOrders(ctx context.Context) ([]Order, error) {
 	res := make([]Order, 0, len(s.m))
+	issuer := auth.GetIssuer(ctx)
 	for _, order := range s.m {
-		res = append(res, *order)
+		if order.Issuer == issuer {
+			res = append(res, *order)
+		}
 	}
 	return res, nil
 }
