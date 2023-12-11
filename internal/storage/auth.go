@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"gophermart/internal/logger"
@@ -12,19 +13,19 @@ type Auth struct {
 	Password string `json:"password"`
 }
 
-func (s *DBStorage) RegisterUser(auth Auth) (bool, error) {
+func (s *DBStorage) RegisterUser(ctx context.Context, auth Auth) (bool, error) {
 	h := sha1.Sum([]byte(auth.Password))
 	p := hex.EncodeToString(h[:])
-	if _, err := s.conn.Exec(s.appCtx, "INSERT INTO auth(login, password) values ($1, $2)", auth.Login, p); err != nil {
+	if _, err := s.conn.Exec(ctx, "INSERT INTO auth(login, password) values ($1, $2)", auth.Login, p); err != nil {
 		s.Error("unable insert into auth table", logger.LogMap{"error": err, "login": auth.Login})
 		return false, err
 	}
 	return true, nil
 }
 
-func (s *DBStorage) LoginUser(auth Auth) (bool, error) {
+func (s *DBStorage) LoginUser(ctx context.Context, auth Auth) (bool, error) {
 	var p string
-	if err := s.conn.QueryRow(s.appCtx, "SELECT password FROM auth where login = $1", auth.Login).Scan(&p); err != nil {
+	if err := s.conn.QueryRow(ctx, "SELECT password FROM auth where login = $1", auth.Login).Scan(&p); err != nil {
 		s.Error("unable select from auth table", logger.LogMap{"error": err, "login": auth.Login})
 		return false, err
 	}

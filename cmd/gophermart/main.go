@@ -38,9 +38,8 @@ func main() {
 
 	c := config.New()
 	l := logger.NewSlogLogger(c)
-	var err error
-	var st api.Storage
-	if st, err = storage.NewDBStorage(ctx, c, l); err != nil {
+	st, err := storage.NewDBStorage(ctx, c, l)
+	if err != nil {
 		log.Fatal("storage open error", err)
 	}
 	h := api.NewHandler(st, l)

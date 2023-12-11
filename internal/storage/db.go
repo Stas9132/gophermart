@@ -14,7 +14,6 @@ import (
 )
 
 type DBStorage struct {
-	appCtx context.Context
 	l2.Logger
 	conn *pgx.Conn
 	m    map[string]*Order
@@ -41,7 +40,6 @@ func NewDBStorage(ctx context.Context, config *config.Config, logger l2.Logger) 
 		}
 	}
 	return &DBStorage{
-		appCtx: ctx,
 		Logger: logger,
 		conn:   conn,
 		m:      m,
@@ -49,6 +47,7 @@ func NewDBStorage(ctx context.Context, config *config.Config, logger l2.Logger) 
 }
 
 func (s *DBStorage) Close() error {
+	_ = s.conn.Close(context.Background())
 	return nil
 }
 
@@ -86,7 +85,7 @@ type Order struct {
 	Issuer     string    `json:"-"`
 }
 
-func (s *DBStorage) NewOrder(order Order) error {
+func (s *DBStorage) NewOrder(ctx context.Context, order Order) error {
 
 	if v, ok := s.m[order.Number]; ok {
 		if order.Issuer == v.Issuer {
@@ -97,7 +96,7 @@ func (s *DBStorage) NewOrder(order Order) error {
 
 	s.m[order.Number] = &order
 
-	if _, err := s.conn.Exec(s.appCtx, "INSERT INTO orders (number, status, accrual, uploaded_at, issuer) VALUES ($1,$2,$3,$4,$5);", order.Number, order.Status, order.Accrual, order.UploadedAt, order.Issuer); err != nil {
+	if _, err := s.conn.Exec(ctx, "INSERT INTO orders (number, status, accrual, uploaded_at, issuer) VALUES ($1,$2,$3,$4,$5);", order.Number, order.Status, order.Accrual, order.UploadedAt, order.Issuer); err != nil {
 		s.Error("NewOrder() error", l2.LogMap{"error": err})
 		return err
 	}
@@ -105,7 +104,7 @@ func (s *DBStorage) NewOrder(order Order) error {
 	return nil
 }
 
-func (s *DBStorage) GetOrders() ([]Order, error) {
+func (s *DBStorage) GetOrders(ctx context.Context) ([]Order, error) {
 	res := make([]Order, 0, len(s.m))
 	for _, order := range s.m {
 		res = append(res, *order)

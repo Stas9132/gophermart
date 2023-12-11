@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/ShiraazMoollatjie/goluhn"
@@ -14,10 +15,10 @@ import (
 )
 
 type Storage interface {
-	RegisterUser(auth storage.Auth) (bool, error)
-	LoginUser(auth storage.Auth) (bool, error)
-	NewOrder(order storage.Order) error
-	GetOrders() ([]storage.Order, error)
+	RegisterUser(ctx context.Context, auth storage.Auth) (bool, error)
+	LoginUser(ctx context.Context, auth storage.Auth) (bool, error)
+	NewOrder(ctx context.Context, order storage.Order) error
+	GetOrders(ctx context.Context) ([]storage.Order, error)
 }
 
 type Handler struct {
@@ -65,7 +66,7 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	err = h.storage.NewOrder(storage.Order{
+	err = h.storage.NewOrder(r.Context(), storage.Order{
 		Number:     string(order),
 		Status:     "NEW",
 		Accrual:    0,
@@ -95,7 +96,7 @@ func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ordrs, err := h.storage.GetOrders()
+	ordrs, err := h.storage.GetOrders(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -26,7 +26,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 
 	h.Info("Register request", logger.LogMap{"user": auth.Login})
 
-	if ok, err := h.storage.RegisterUser(auth); err != nil {
+	if ok, err := h.storage.RegisterUser(r.Context(), auth); err != nil {
 		h.Error("storage: register user error", logger.LogMap{"error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -63,7 +63,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	h.Info("Login request", logger.LogMap{"user": auth.Login})
 
-	if ok, err := h.storage.LoginUser(auth); err != nil {
+	if ok, err := h.storage.LoginUser(r.Context(), auth); err != nil {
 		h.Error("storage: logon user error", logger.LogMap{"user": auth.Login, "error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
