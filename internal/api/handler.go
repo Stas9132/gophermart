@@ -36,7 +36,7 @@ func NewHandler(storage Storage, l logger.Logger) *Handler {
 
 func (h *Handler) Test(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(auth.GetIssuer(r.Context())))
+	_, _ = w.Write([]byte(auth.GetIssuer(r.Context())))
 }
 
 func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {

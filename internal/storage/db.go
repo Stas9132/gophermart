@@ -65,7 +65,7 @@ func createDB(DBConn string, logger l2.Logger) (*pgx.Conn, error) {
 		logger.Error("Error while create migration", l2.LogMap{"error": err})
 		return nil, err
 	}
-	m.Drop()
+	_ = m.Drop()
 	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		logger.Error("Error while migration up", l2.LogMap{"error": err})
 		return nil, err
