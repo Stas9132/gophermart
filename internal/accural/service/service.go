@@ -52,7 +52,7 @@ func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 
 	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO orders(order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
 	if err != nil {
-		om.db.Logger.Error("unable insert into discounts table", logger.LogMap{"error": err, "AcceptOrder": "discounts"})
+		om.db.Logger.Error("unable insert into orders table", logger.LogMap{"error": err, "AcceptOrder": "discounts"})
 		log.Println(err)
 		return err
 	}
