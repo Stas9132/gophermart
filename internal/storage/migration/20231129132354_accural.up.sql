@@ -22,11 +22,5 @@ CREATE TABLE IF NOT EXISTS orders
 (
     id SERIAL PRIMARY KEY ,
     order_id TEXT,
-    discount_id NUMERIC,
-                       number TEXT NOT NULL,
-
-                       status TEXT NOT NULL,
-                       accrual INT,
-                       uploaded_at TIMESTAMP WITH TIME ZONE NOT NULL,
-                       issuer TEXT
+    discount_id NUMERIC
 );
