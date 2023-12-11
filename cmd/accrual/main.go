@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	"gophermart/internal/accural/api"
-	"gophermart/internal/accural/storage"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
 	"log"
@@ -25,12 +24,12 @@ func main() {
 
 	c := config.New()
 	l := logger.NewSlogLogger(c)
-	st, err := storage.NewDBStorageAccural(context.Background(), c, l)
-	if err != nil {
-		log.Println(err)
-
-	}
-	handler := api.NewAccuralHandler(st, l)
+	//st, err := storage.NewDBStorageAccural(context.Background(), c, l)
+	//if err != nil {
+	//	log.Println(err)
+	//
+	//}
+	handler := api.NewAccuralHandler(nil, l)
 
 	mRouter(handler)
 	if err := run(c); err != nil {
@@ -45,7 +44,7 @@ func main() {
 	}()
 
 	<-shutdownChan
-	defer st.Conn.Close(context.Background())
+	//defer st.Conn.Close(context.Background())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
