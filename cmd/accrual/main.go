@@ -33,12 +33,10 @@ func main() {
 	}
 	handler := api.NewAccuralHandler(st, l)
 
-	go func() {
-		mRouter(handler)
-		if err := run(c); err != nil {
-			panic(err)
-		}
-	}()
+	mRouter(handler)
+	if err := run(c); err != nil {
+		panic(err)
+	}
 	go func() {
 		sigchan := make(chan os.Signal, 1)
 		signal.Notify(sigchan, os.Interrupt, syscall.SIGTERM)

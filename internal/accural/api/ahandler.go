@@ -7,12 +7,10 @@ import (
 	"gophermart/internal/accural/models"
 	"gophermart/internal/accural/storage"
 	"gophermart/internal/logger"
-	"io"
 	"net/http"
 )
 
 type StorageAccural interface {
-	io.Closer
 	AcceptOrder(discounts []storage.Discount) error
 	AcceptDiscount(discounts []storage.Discount) error
 	CalculateDiscount(ds []storage.Discount) (decimal.Decimal, error)

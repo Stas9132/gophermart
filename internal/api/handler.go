@@ -14,7 +14,6 @@ import (
 )
 
 type Storage interface {
-	io.Closer
 	RegisterUser(auth storage.Auth) (bool, error)
 	LoginUser(auth storage.Auth) (bool, error)
 	NewOrder(order storage.Order) error

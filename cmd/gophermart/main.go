@@ -45,19 +45,14 @@ func main() {
 	}
 	h := api.NewHandler(st, l)
 
-	go func() {
-		mRouter(h)
-		server = &http.Server{Addr: c.Address}
-		run(c)
-	}()
+	mRouter(h)
+	server = &http.Server{Addr: c.Address}
+	run(c)
 
 	<-ctx.Done()
 
 	if err = server.Close(); err != nil {
 		log.Println("server close error", err)
-	}
-	if err = st.Close(); err != nil {
-		log.Println("storage close error", err)
 	}
 
 	time.Sleep(time.Second)
