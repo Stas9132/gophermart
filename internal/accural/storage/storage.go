@@ -18,30 +18,30 @@ type DBStorage struct {
 	Conn *pgx.Conn
 }
 
-func (D DBStorage) Close() error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (D DBStorage) AcceptOrder(discounts []Discount) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (D DBStorage) AcceptDiscount(discounts []Discount) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (D DBStorage) CalculateDiscount(ds []Discount) (decimal.Decimal, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (D DBStorage) GetCalculatedDiscountByOrderID(orderID int) (decimal.Decimal, error) {
-	//TODO implement me
-	panic("implement me")
-}
+//func (D DBStorage) Close() error {
+//	//TODO implement me
+//	panic("implement me")
+//}
+//
+//func (D DBStorage) AcceptOrder(discounts []Discount) error {
+//	//TODO implement me
+//	panic("implement me")
+//}
+//
+//func (D DBStorage) AcceptDiscount(discounts []Discount) error {
+//	//TODO implement me
+//	panic("implement me")
+//}
+//
+//func (D DBStorage) CalculateDiscount(ds []Discount) (decimal.Decimal, error) {
+//	//TODO implement me
+//	panic("implement me")
+//}
+//
+//func (D DBStorage) GetCalculatedDiscountByOrderID(orderID int) (decimal.Decimal, error) {
+//	//TODO implement me
+//	panic("implement me")
+//}
 
 func NewDBStorageAccural(ctx context.Context, config *config.Config, logger logger.Logger) (*DBStorage, error) {
 	conn, err := newMigrate(config.DatabaseURI, logger)

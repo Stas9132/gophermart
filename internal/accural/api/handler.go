@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
@@ -12,23 +13,20 @@ import (
 )
 
 type StorageAccural interface {
-	AcceptOrder(discounts []storage.Discount) error
-	AcceptDiscount(discounts []storage.Discount) error
-	CalculateDiscount(ds []storage.Discount) (decimal.Decimal, error)
-	GetCalculatedDiscountByOrderID(orderID int) (decimal.Decimal, error)
+	GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error)
+	AcceptOrder(ctx context.Context, order service.Order) error
+	AcceptDiscount(ctx context.Context, discount storage.Discount) error
 }
 
 type Handler struct {
-	storage StorageAccural
 	logger.Logger
-	om *service.OrderManager
+	om StorageAccural
 }
 
 func NewAccuralHandler(storage *storage.DBStorage, logger logger.Logger) *Handler {
 	return &Handler{
-		storage: storage,
-		Logger:  logger,
-		om:      service.NewOrderManager(storage),
+		Logger: logger,
+		om:     service.NewOrderManager(storage),
 	}
 
 }
