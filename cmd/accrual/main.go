@@ -49,14 +49,14 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		log.Println("Ошибка при завершении работы сервера: %v\n", err)
+		log.Printf("Ошибка при завершении работы сервера: %v\n", err)
 	}
 
 	os.Exit(0)
 }
 
 func run(c *config.Config) error {
-	log.Println("Сервер запущен на %v\n", c.Address)
+	log.Printf("Сервер запущен на %v\n", c.Address)
 
 	server = &http.Server{Addr: c.Address}
 	go func() {
@@ -71,7 +71,7 @@ func run(c *config.Config) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		log.Println("Ошибка при завершении работы сервера: %v\n", err)
+		log.Printf("Ошибка при завершении работы сервера: %v\n", err)
 	}
 
 	return nil
