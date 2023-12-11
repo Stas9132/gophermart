@@ -10,6 +10,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"gophermart/internal/config"
 	l2 "gophermart/internal/logger"
+	"log"
 	"time"
 )
 
@@ -88,6 +89,7 @@ type Order struct {
 func (s *DBStorage) NewOrder(ctx context.Context, order Order) error {
 
 	if v, ok := s.m[order.Number]; ok {
+		log.Println("xxx", order.Issuer, v.Issuer)
 		if order.Issuer == v.Issuer {
 			return ErrSameUser
 		}
