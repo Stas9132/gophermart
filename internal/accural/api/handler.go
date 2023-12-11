@@ -44,7 +44,8 @@ func (h Handler) AccrualGoods(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
 	}
-	err = h.om.AcceptDiscount(discount)
+
+	err = h.om.AcceptDiscount(r.Context(), discount)
 	if err != nil {
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
@@ -66,7 +67,7 @@ func (h Handler) AccrualOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.om.AcceptOrder(orderData)
+	err = h.om.AcceptOrder(r.Context(), orderData)
 	if err != nil {
 		http.Error(w, "Order entry error", http.StatusInternalServerError)
 		return
