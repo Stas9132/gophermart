@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
-	"gophermart/internal/accural/models"
+	"gophermart/internal/accural/service"
 	"gophermart/internal/accural/storage"
 	"gophermart/internal/logger"
 	"net/http"
@@ -20,14 +20,14 @@ type StorageAccural interface {
 type Handler struct {
 	storage StorageAccural
 	logger.Logger
-	om *models.OrderManager
+	om *service.OrderManager
 }
 
 func NewAccuralHandler(storage *storage.DBStorage, logger logger.Logger) *Handler {
 	return &Handler{
 		storage: storage,
 		Logger:  logger,
-		om:      models.NewOrderManager(storage),
+		om:      service.NewOrderManager(storage),
 	}
 
 }
@@ -59,7 +59,7 @@ func (h Handler) AccrualOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var orderData models.Order
+	var orderData service.Order
 	err := json.NewDecoder(r.Body).Decode(&orderData)
 	if err != nil {
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
