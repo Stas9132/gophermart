@@ -61,19 +61,6 @@ func newMigrate(DBConn string, l logger.Logger) (*pgx.Conn, error) {
 	}
 
 	l.Info("Successfully connected to the database!", logger.LogMap{"DSN": DBConn})
-
-	//m, err := migrate.New("file://internal/accural/storage/migrations/", DBConn)
-	//if err != nil {
-	//	logger.Error("Error while create migration", slog.String("error", err.Error()))
-	//	return nil, err
-	//}
-	//m.Drop()
-	//if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-	//	logger.Error("Error while migration up", slog.String("error", err.Error()))
-	//	return nil, err
-	//}
-	//logger.Info("Migration complete!")
-
 	return conn, nil
 }
 

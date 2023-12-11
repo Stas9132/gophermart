@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/gorilla/mux"
 	"gophermart/internal/accural/api"
 	"gophermart/internal/accural/storage"
@@ -50,14 +49,14 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		fmt.Printf("Ошибка при завершении работы сервера: %v\n", err)
+		log.Println("Ошибка при завершении работы сервера: %v\n", err)
 	}
 
 	os.Exit(0)
 }
 
 func run(c *config.Config) error {
-	fmt.Printf("Сервер запущен на %v\n", c.Address)
+	log.Println("Сервер запущен на %v\n", c.Address)
 
 	server = &http.Server{Addr: c.Address}
 	go func() {
@@ -67,12 +66,12 @@ func run(c *config.Config) error {
 	}()
 
 	<-shutdownChan
-	fmt.Println("Завершение работы сервера...")
+	log.Println("Завершение работы сервера...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		fmt.Printf("Ошибка при завершении работы сервера: %v\n", err)
+		log.Println("Ошибка при завершении работы сервера: %v\n", err)
 	}
 
 	return nil
@@ -80,9 +79,6 @@ func run(c *config.Config) error {
 
 func mRouter(handler *api.Handler) {
 	r := mux.NewRouter()
-
-	//r.Use(handler.LoggingMiddleware, gzip.GzipMiddleware, handler.HashSHA256Middleware)
-	//r.Use(api.Authorization)
 
 	r.HandleFunc("/api/goods", handler.AccrualGoods).Methods(http.MethodPost)
 	r.HandleFunc("/api/orders", handler.AccrualOrders).Methods(http.MethodPost)
