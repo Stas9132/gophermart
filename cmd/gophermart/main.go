@@ -62,7 +62,6 @@ func main() {
 func mRouter(handler *api.Handler) {
 	r := mux.NewRouter()
 
-	//r.Use(handler.LoggingMiddleware, gzip.GzipMiddleware, handler.HashSHA256Middleware)
 	r.Use(auth.Authorization)
 
 	r.HandleFunc("/api/user/test", handler.Test).Methods(http.MethodGet)
