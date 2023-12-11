@@ -9,6 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
+	"log"
 )
 
 type DBStorage struct {
@@ -57,6 +58,7 @@ func NewDBStorageAccural(ctx context.Context, config *config.Config, logger logg
 func newMigrate(DBConn string, l logger.Logger) (*pgx.Conn, error) {
 	conn, err := pgx.Connect(context.Background(), DBConn)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 

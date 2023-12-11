@@ -36,6 +36,7 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 
 	err = om.db.Conn.QueryRow(context.Background(), "SELECT SUM(discounts.reward) FROM discounts JOIN orders ON discounts.id = orders.discount_id WHERE orders.order_id = $1", id).Scan(&result)
 	if err != nil {
+		log.Println(err)
 		return result, err
 	}
 
@@ -52,6 +53,7 @@ func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO order(order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
 	if err != nil {
 		om.db.Logger.Error("unable insert into discounts table", logger.LogMap{"error": err, "AcceptOrder": "discounts"})
+		log.Println(err)
 		return err
 	}
 
@@ -62,6 +64,7 @@ func (om OrderManager) AcceptDiscount(ctx context.Context, discount storage.Disc
 	_, err := om.db.Conn.Exec(ctx, "INSERT INTO discounts(match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.RewardType)
 	if err != nil {
 		om.db.Logger.Error("unable insert into discounts table", logger.LogMap{"error": err, "AcceptDiscounts": "discount"})
+		log.Println(err)
 		return err
 	}
 
@@ -94,6 +97,7 @@ func (om OrderManager) GetAllDiscounts(ctx context.Context) ([]storage.Discount,
 
 	rows, err := om.db.Conn.Query(ctx, "SELECT match, reward, reward_type FROM discounts")
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -107,6 +111,7 @@ func (om OrderManager) GetAllDiscounts(ctx context.Context) ([]storage.Discount,
 	}
 
 	if err := rows.Err(); err != nil {
+		log.Println(err)
 		return nil, err
 	}
 

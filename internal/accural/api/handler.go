@@ -7,6 +7,7 @@ import (
 	"gophermart/internal/accural/service"
 	"gophermart/internal/accural/storage"
 	"gophermart/internal/logger"
+	"log"
 	"net/http"
 )
 
@@ -41,12 +42,14 @@ func (h Handler) AccrualGoods(w http.ResponseWriter, r *http.Request) {
 	var discount storage.Discount
 	err := json.NewDecoder(r.Body).Decode(&discount)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
 	}
 
 	err = h.om.AcceptDiscount(r.Context(), discount)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
 	}
@@ -63,12 +66,14 @@ func (h Handler) AccrualOrders(w http.ResponseWriter, r *http.Request) {
 	var orderData service.Order
 	err := json.NewDecoder(r.Body).Decode(&orderData)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
 	}
 
 	err = h.om.AcceptOrder(r.Context(), orderData)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Order entry error", http.StatusInternalServerError)
 		return
 	}
@@ -83,6 +88,7 @@ func (h Handler) AccrualGetOrders(w http.ResponseWriter, r *http.Request) {
 
 	discount, err := h.om.GetCalculatedDiscountByOrderID(orderID)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Failed to fetch discount for the order", http.StatusInternalServerError)
 		return
 	}
