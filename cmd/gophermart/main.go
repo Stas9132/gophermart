@@ -37,6 +37,7 @@ func run(c *config.Config) {
 
 func main() {
 	decimal.MarshalJSONWithoutQuotes = true
+	storage.Balance.Current = decimal.NewFromFloat32(729.98)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 

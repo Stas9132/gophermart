@@ -120,18 +120,13 @@ func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var balance = struct {
-	Current   decimal.Decimal `json:"current"`
-	Withdrawn decimal.Decimal `json:"withdrawn"`
-}{
-	Current:   decimal.NewFromFloat32(729.98),
-	Withdrawn: decimal.Zero,
-}
-
 func (h *Handler) GetBalance(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		h.Info("GET /api/user/balance")
+	}()
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(balance)
+	_ = json.NewEncoder(w).Encode(storage.Balance)
 }
 
 func (h *Handler) PostBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
@@ -140,6 +135,9 @@ func (h *Handler) PostBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
 		Sum   decimal.Decimal `json:"sum"`
 	}
 	var req Req
+	defer func() {
+		h.Info("POST /api/user/balance/withdraw", logger.LogMap{"order": req.Order})
+	}()
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		h.Error("json.Decode()", logger.LogMap{"error": err})
@@ -151,8 +149,7 @@ func (h *Handler) PostBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	balance.Current = balance.Current.Sub(req.Sum)
-	balance.Withdrawn = balance.Withdrawn.Add(req.Sum)
+	storage.SubBalance(req.Sum)
 
 	w.WriteHeader(http.StatusOK)
 }
