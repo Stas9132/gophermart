@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gorilla/mux"
+	"github.com/shopspring/decimal"
 	"gophermart/internal/api"
 	"gophermart/internal/auth"
 	"gophermart/internal/config"
@@ -35,6 +36,7 @@ func run(c *config.Config) {
 }
 
 func main() {
+	decimal.MarshalJSONWithoutQuotes = true
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
