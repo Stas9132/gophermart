@@ -25,6 +25,7 @@ type StorageImpl interface {
 	NewOrder(ctx context.Context, order Order) error
 	GetOrders(ctx context.Context) ([]Order, error)
 	UpdateOrder(ctx context.Context, order Order) error
+	GetOrdersInProcessing() ([]Order, error)
 }
 
 func New() StorageImpl {
@@ -121,6 +122,15 @@ func (s *DBStorage) GetOrders(ctx context.Context) ([]Order, error) {
 	issuer := auth.GetIssuer(ctx)
 	for _, order := range s.m {
 		if order.Issuer == issuer {
+			res = append(res, *order)
+		}
+	}
+	return res, nil
+}
+func (s *DBStorage) GetOrdersInProcessing() ([]Order, error) {
+	res := make([]Order, 0, len(s.m))
+	for _, order := range s.m {
+		if order.Status == "NEW" {
 			res = append(res, *order)
 		}
 	}

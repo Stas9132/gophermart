@@ -12,7 +12,7 @@ func StatusDaemon(ctx context.Context) {
 	st := storage.New()
 	accural := service.New()
 	for {
-		orders, err := st.GetOrders(ctx)
+		orders, err := st.GetOrdersInProcessing()
 		if err != nil {
 			log.Printf("get orders: %v\n", err)
 		}
