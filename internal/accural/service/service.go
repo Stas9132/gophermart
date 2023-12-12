@@ -59,7 +59,10 @@ func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 		log.Println(err)
 		return err
 	}
-	dc := order.CalculateDiscount(discounts)
+	dc, err := order.CalculateDiscount(discounts)
+	if err != nil {
+		dc = decimal.NewFromInt(-1)
+	}
 
 	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO aorders(order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
 	if err != nil {
@@ -83,7 +86,7 @@ func (om OrderManager) AcceptDiscount(ctx context.Context, discount storage.Disc
 	return nil
 }
 
-func (o Order) CalculateDiscount(discounts []storage.Discount) decimal.Decimal {
+func (o Order) CalculateDiscount(discounts []storage.Discount) (decimal.Decimal, error) {
 	var result decimal.Decimal
 
 	for _, g := range o.Goods {
@@ -100,7 +103,7 @@ func (o Order) CalculateDiscount(discounts []storage.Discount) decimal.Decimal {
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 func (om OrderManager) GetAllDiscounts(ctx context.Context) ([]storage.Discount, error) {

@@ -80,7 +80,7 @@ func (h Handler) AccrualOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) AccrualGetOrders(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	orderID := vars["number"]
 
@@ -92,5 +92,24 @@ func (h Handler) AccrualGetOrders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(struct {
+		Order   string          `json:"order"`
+		Status  string          `json:"status"`
+		Accrual decimal.Decimal `json:"accrual"`
+	}{
+		Order: orderID,
+		Status: func() string {
+			if discount.LessThan(decimal.Zero) {
+				return "INVALID"
+			}
+			return "PROCESSED"
+		}(),
+		Accrual: func() decimal.Decimal {
+			if discount.LessThan(decimal.Zero) {
+				return decimal.Zero
+			}
+			return discount
+		}(),
+	})
 	_, _ = w.Write([]byte(discount.String()))
 }

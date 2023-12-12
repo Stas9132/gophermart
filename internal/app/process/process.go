@@ -14,7 +14,7 @@ func StatusDaemon(ctx context.Context) {
 	for {
 		orders, err := st.GetOrders(ctx)
 		if err != nil {
-			log.Printf("get orders: %v", err)
+			log.Printf("get orders: %v\n", err)
 		}
 
 		for _, order := range orders {
