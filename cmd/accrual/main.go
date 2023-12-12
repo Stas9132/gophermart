@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"gophermart/internal/accural/api"
 	"gophermart/internal/accural/storage"
+	"gophermart/internal/app/process"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
 	"log"
@@ -30,6 +31,8 @@ func main() {
 		log.Println(err)
 
 	}
+
+	go process.StatusDaemon(context.Background())
 	handler := api.NewAccuralHandler(st, l)
 
 	mRouter(handler)

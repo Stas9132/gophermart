@@ -8,6 +8,7 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/shopspring/decimal"
 	"gophermart/internal/auth"
 	"gophermart/internal/config"
 	l2 "gophermart/internal/logger"
@@ -18,6 +19,16 @@ type DBStorage struct {
 	l2.Logger
 	conn *pgx.Conn
 	m    map[string]*Order
+}
+
+type StorageImpl interface {
+	NewOrder(ctx context.Context, order Order) error
+	GetOrders(ctx context.Context) ([]Order, error)
+	UpdateOrder(ctx context.Context, order Order) error
+}
+
+func New() StorageImpl {
+	return &DBStorage{}
 }
 
 func NewDBStorage(ctx context.Context, config *config.Config, logger l2.Logger) (*DBStorage, error) {
@@ -79,11 +90,11 @@ var ErrSameUser = errors.New("already in base")
 var ErrAnotherUser = errors.New("conflict")
 
 type Order struct {
-	Number     string    `json:"number"`
-	Status     string    `json:"status"`
-	Accrual    int       `json:"accrual,omitempty"`
-	UploadedAt time.Time `json:"uploaded_at"`
-	Issuer     string    `json:"-"`
+	Number     string          `json:"number"`
+	Status     string          `json:"status"`
+	Accrual    decimal.Decimal `json:"accrual,omitempty"`
+	UploadedAt time.Time       `json:"uploaded_at"`
+	Issuer     string          `json:"-"`
 }
 
 func (s *DBStorage) NewOrder(ctx context.Context, order Order) error {
@@ -114,4 +125,19 @@ func (s *DBStorage) GetOrders(ctx context.Context) ([]Order, error) {
 		}
 	}
 	return res, nil
+}
+
+func (s *DBStorage) UpdateOrder(ctx context.Context, order Order) error {
+	_, ok := s.m[order.Number]
+	if !ok {
+		return errors.New("order not found")
+	}
+
+	_, err := s.conn.Exec(ctx, "UPDATE orders SET status = $1, accrual = $2 WHERE number = $3;", order.Status, order.Accrual, order.Number)
+	if err != nil {
+		s.Error("Update Order error", l2.LogMap{"error": err})
+		return err
+	}
+
+	return nil
 }
