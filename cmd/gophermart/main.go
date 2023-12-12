@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/api"
+	"gophermart/internal/app/process"
 	"gophermart/internal/auth"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
@@ -41,6 +42,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	go process.StatusDaemon(ctx)
 	c := config.New()
 	l := logger.NewSlogLogger(c)
 	st, err := storage.NewDBStorage(ctx, c, l)
