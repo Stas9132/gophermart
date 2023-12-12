@@ -12,6 +12,7 @@ import (
 	"gophermart/internal/auth"
 	"gophermart/internal/config"
 	l2 "gophermart/internal/logger"
+	"log"
 	"time"
 )
 
@@ -128,6 +129,7 @@ func (s *DBStorage) GetOrders(ctx context.Context) ([]Order, error) {
 	return res, nil
 }
 func (s *DBStorage) GetOrdersInProcessing() ([]Order, error) {
+	log.Println("cash size :", len(s.m))
 	res := make([]Order, 0, len(s.m))
 	for _, order := range s.m {
 		if order.Status == "NEW" {
