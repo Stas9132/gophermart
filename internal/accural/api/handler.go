@@ -111,5 +111,4 @@ func (h Handler) AccrualGetOrders(w http.ResponseWriter, r *http.Request) {
 			return discount
 		}(),
 	})
-	_, _ = w.Write([]byte(discount.String()))
 }
