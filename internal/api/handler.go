@@ -120,19 +120,38 @@ func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var balance = struct {
+	Current   decimal.Decimal `json:"current"`
+	Withdrawn decimal.Decimal `json:"withdrawn"`
+}{
+	Current:   decimal.NewFromFloat32(729.98),
+	Withdrawn: decimal.Zero,
+}
+
 func (h *Handler) GetBalance(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(struct {
-		Current   decimal.Decimal `json:"current"`
-		Withdrawn decimal.Decimal `json:"withdrawn"`
-	}{
-		Current:   decimal.NewFromFloat32(729.98),
-		Withdrawn: decimal.Zero,
-	})
+	_ = json.NewEncoder(w).Encode(balance)
 }
 
 func (h *Handler) PostBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
+	type Req struct {
+		Order string `json:"order"`
+		Sum   int    `json:"sum"`
+	}
+	var req Req
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err = goluhn.Validate(req.Order); err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	balance.Current = balance.Current.Sub(decimal.NewFromInt(int64(req.Sum)))
+	balance.Withdrawn = balance.Withdrawn.Add(decimal.NewFromInt(int64(req.Sum)))
+
 	w.WriteHeader(http.StatusOK)
 }
 
