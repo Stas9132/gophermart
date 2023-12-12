@@ -2,6 +2,7 @@ package storage
 
 import (
 	"github.com/shopspring/decimal"
+	"log"
 	"sync"
 	"time"
 )
@@ -34,4 +35,5 @@ func SubBalance(value decimal.Decimal) {
 	lock.Lock()
 	Hist = append(Hist, HistT{Sum: value})
 	lock.Unlock()
+	log.Println(Hist)
 }
