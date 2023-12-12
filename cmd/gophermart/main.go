@@ -42,7 +42,6 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	go process.StatusDaemon(ctx)
 	c := config.New()
 	l := logger.NewSlogLogger(c)
 	st, err := storage.NewDBStorage(ctx, c, l)
@@ -50,7 +49,7 @@ func main() {
 		log.Fatal("storage open error", err)
 	}
 	h := api.NewHandler(st, l)
-
+	go process.StatusDaemon(ctx, st)
 	mRouter(h)
 	server = &http.Server{Addr: c.Address}
 	run(c)

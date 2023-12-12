@@ -8,8 +8,7 @@ import (
 	"time"
 )
 
-func StatusDaemon(ctx context.Context) {
-	st := storage.New()
+func StatusDaemon(ctx context.Context, st *storage.DBStorage) {
 	accural := service.New()
 	for {
 		orders, err := st.GetOrdersInProcessing()
