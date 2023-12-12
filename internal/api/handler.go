@@ -10,7 +10,6 @@ import (
 	"gophermart/internal/logger"
 	"gophermart/internal/storage"
 	"io"
-	"log"
 	"net/http"
 	"sort"
 	"time"
@@ -162,7 +161,6 @@ func (h *Handler) GetWithdraw(w http.ResponseWriter, r *http.Request) {
 	}()
 	user = auth.GetIssuer(r.Context())
 
-	log.Println(storage.Hist)
 	if len(storage.Hist) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
