@@ -136,8 +136,8 @@ func (h *Handler) GetBalance(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) PostBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
 	type Req struct {
-		Order string `json:"order"`
-		Sum   int    `json:"sum"`
+		Order string          `json:"order"`
+		Sum   decimal.Decimal `json:"sum"`
 	}
 	var req Req
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -151,8 +151,8 @@ func (h *Handler) PostBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	balance.Current = balance.Current.Sub(decimal.NewFromInt(int64(req.Sum)))
-	balance.Withdrawn = balance.Withdrawn.Add(decimal.NewFromInt(int64(req.Sum)))
+	balance.Current = balance.Current.Sub(req.Sum)
+	balance.Withdrawn = balance.Withdrawn.Add(req.Sum)
 
 	w.WriteHeader(http.StatusOK)
 }
