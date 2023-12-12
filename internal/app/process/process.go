@@ -23,12 +23,15 @@ func StatusDaemon(ctx context.Context) {
 				discount, err := accural.GetCalculatedDiscountByOrderID(order.Number)
 				if err != nil {
 					order.Status = "INVALID"
-					continue
+					err = st.UpdateOrder(ctx, order)
+					if err != nil {
+						log.Printf("order status invalid %v", err)
+					}
 				}
 				order.Accrual.Add(discount)
 				err = st.UpdateOrder(ctx, order)
 				if err != nil {
-					log.Println(err)
+					log.Printf("order status processed %v", err)
 				}
 
 			}
