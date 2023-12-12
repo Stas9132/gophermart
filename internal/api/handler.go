@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ShiraazMoollatjie/goluhn"
+	"github.com/shopspring/decimal"
 	"gophermart/internal/auth"
 	"gophermart/internal/logger"
 	"gophermart/internal/storage"
@@ -69,7 +70,7 @@ func (h *Handler) PostOrders(w http.ResponseWriter, r *http.Request) {
 	err = h.storage.NewOrder(r.Context(), storage.Order{
 		Number:     string(order),
 		Status:     "NEW",
-		Accrual:    0,
+		Accrual:    decimal.Zero,
 		UploadedAt: time.Now(),
 		Issuer:     auth.GetIssuer(r.Context()),
 	})
