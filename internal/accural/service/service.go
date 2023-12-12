@@ -34,8 +34,8 @@ type Good struct {
 	Price       decimal.Decimal `json:"price"`
 }
 
-func New() AccuralService {
-	return &OrderManager{}
+func New(st *storage.DBStorage) AccuralService {
+	return NewOrderManager(st)
 }
 
 func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error) {

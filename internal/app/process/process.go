@@ -9,7 +9,7 @@ import (
 )
 
 func StatusDaemon(ctx context.Context, st *storage.DBStorage) {
-	accural := service.New()
+	accural := service.New(st)
 	for {
 		orders, err := st.GetOrdersInProcessing()
 		if err != nil {
