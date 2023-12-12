@@ -28,6 +28,7 @@ func main() {
 	st, err := storage.NewDBStorageAccural(context.Background(), c, l)
 	if err != nil {
 		log.Println(err)
+		panic(err)
 
 	}
 
