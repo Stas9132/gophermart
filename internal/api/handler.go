@@ -127,7 +127,7 @@ func (h *Handler) GetBalance(w http.ResponseWriter, r *http.Request) {
 		Current   decimal.Decimal `json:"current"`
 		Withdrawn decimal.Decimal `json:"withdrawn"`
 	}{
-		Current:   decimal.NewFromFloat(729.98),
+		Current:   decimal.NewFromFloat32(729.98),
 		Withdrawn: decimal.Zero,
 	})
 }
