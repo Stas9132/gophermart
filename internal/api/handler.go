@@ -142,10 +142,12 @@ func (h *Handler) PostBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
 	var req Req
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
+		h.Error("json.Decode()", logger.LogMap{"error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if err = goluhn.Validate(req.Order); err != nil {
+		h.Error("goluhn.Validate()", logger.LogMap{"error": err, "order": req.Order})
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
