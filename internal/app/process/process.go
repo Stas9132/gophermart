@@ -16,10 +16,12 @@ func StatusDaemon(ctx context.Context) {
 		if err != nil {
 			log.Printf("get orders: %v\n", err)
 		}
+		log.Println("process orders : ", len(orders))
 
 		for _, order := range orders {
 			if order.Status == "NEW" {
 				order.Status = "PROCESSING"
+				log.Printf("order status processing created")
 				discount, err := accural.GetCalculatedDiscountByOrderID(order.Number)
 				if err != nil {
 					order.Status = "INVALID"
