@@ -121,6 +121,15 @@ func (h *Handler) GetOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetBalance(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(struct {
+		Current   decimal.Decimal `json:"current"`
+		Withdrawn decimal.Decimal `json:"withdrawn"`
+	}{
+		Current:   decimal.NewFromFloat(729.98),
+		Withdrawn: decimal.Zero,
+	})
+
 	w.WriteHeader(http.StatusOK)
 }
 
