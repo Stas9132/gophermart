@@ -161,11 +161,6 @@ func (h *Handler) GetWithdraw(w http.ResponseWriter, r *http.Request) {
 	}()
 	user = auth.GetIssuer(r.Context())
 
-	storage.Hist = []storage.HistT{{
-		Order:       "111",
-		Sum:         decimal.Decimal{},
-		ProcessedAt: time.Time{},
-	}}
 	if len(storage.Hist) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
