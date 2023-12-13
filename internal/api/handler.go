@@ -158,7 +158,7 @@ func (h *Handler) PostBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetWithdraw(w http.ResponseWriter, r *http.Request) {
 	var user string
 	defer func() {
-		h.Info("POST /api/user/balance/withdraw", logger.LogMap{"user": user})
+		h.Info("GET /api/user/withdrawals", logger.LogMap{"user": user})
 	}()
 	user = auth.GetIssuer(r.Context())
 
@@ -166,6 +166,8 @@ func (h *Handler) GetWithdraw(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	log.Println(json.NewEncoder(w).Encode(storage.Hist), storage.Hist)
 
