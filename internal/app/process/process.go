@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func StatusDaemon(ctx context.Context, config config.Config, st *storage.DBStorage) {
+func StatusDaemon(ctx context.Context, config *config.Config, st *storage.DBStorage) {
 	for {
 		orders, err := st.GetOrdersInProcessing()
 		if err != nil {
