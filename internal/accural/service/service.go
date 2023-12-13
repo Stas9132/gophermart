@@ -40,15 +40,26 @@ func New(st *storage.DBStorage) AccuralService {
 
 func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error) {
 	var result decimal.Decimal
+
 	id, err := strconv.Atoi(orderID)
 	if err != nil {
 		log.Println(err)
+		return result, err
 	}
 
-	err = om.db.Conn.QueryRow(context.Background(), "SELECT SUM(discounts.reward) FROM discounts JOIN aorders ON discounts.id = aorders.discount_id WHERE aorders.order_id = $1", id).Scan(&result)
+	rows, err := om.db.Conn.Query(context.Background(), "SELECT SUM(discounts.reward) FROM discounts JOIN aorders ON discounts.id = aorders.discount_id WHERE aorders.order_id = $1", id)
 	if err != nil {
-		log.Println("=========", err)
+		log.Println(err)
 		return result, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		err := rows.Scan(&result)
+		if err != nil {
+			log.Println(err)
+			return result, err
+		}
 	}
 
 	return result, nil
