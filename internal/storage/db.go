@@ -136,6 +136,8 @@ func (s *DBStorage) GetOrdersInProcessing() ([]Order, error) {
 			res = append(res, *order)
 		}
 	}
+	log.Println(res)
+
 	return res, nil
 }
 
