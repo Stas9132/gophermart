@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/api"
+	"gophermart/internal/app/process"
 	"gophermart/internal/auth"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
@@ -37,7 +38,6 @@ func run(c *config.Config) {
 
 func main() {
 	decimal.MarshalJSONWithoutQuotes = true
-	storage.Balance.Current = decimal.NewFromFloat32(729.98)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -48,7 +48,7 @@ func main() {
 		log.Fatal("storage open error", err)
 	}
 	h := api.NewHandler(st, l)
-	//go process.StatusDaemon(ctx, st)
+	go process.StatusDaemon(ctx, st)
 	mRouter(h)
 	server = &http.Server{Addr: c.Address}
 	run(c)

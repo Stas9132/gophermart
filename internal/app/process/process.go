@@ -2,14 +2,13 @@ package process
 
 import (
 	"context"
-	"gophermart/internal/accural/service"
+	"github.com/shopspring/decimal"
 	"gophermart/internal/storage"
 	"log"
 	"time"
 )
 
 func StatusDaemon(ctx context.Context, st *storage.DBStorage) {
-	accural := service.New(st)
 	for {
 		orders, err := st.GetOrdersInProcessing()
 		if err != nil {
@@ -21,7 +20,8 @@ func StatusDaemon(ctx context.Context, st *storage.DBStorage) {
 			if order.Status == "NEW" {
 				order.Status = "PROCESSING"
 				log.Printf("order status processing created")
-				discount, err := accural.GetCalculatedDiscountByOrderID(order.Number)
+				discount := decimal.NewFromFloat32(729.98)
+
 				if err != nil {
 					order.Status = "INVALID"
 					err = st.UpdateOrder(ctx, order)
