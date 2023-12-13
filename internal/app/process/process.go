@@ -26,6 +26,7 @@ func StatusDaemon(ctx context.Context, config *config.Config, st *storage.DBStor
 			b, e := io.ReadAll(resp.Body)
 			log.Println(string(b), e)
 
+			resp.Body.Close()
 			discount := decimal.NewFromFloat32(729.98)
 
 			if err != nil {
