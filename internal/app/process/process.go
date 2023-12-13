@@ -28,6 +28,7 @@ func StatusDaemon(ctx context.Context, st *storage.DBStorage) {
 				}
 			}
 			order.Status = "PROCESSED"
+			order.Accrual = discount
 
 			order.Accrual.Add(discount)
 			err = st.UpdateOrder(ctx, order)
