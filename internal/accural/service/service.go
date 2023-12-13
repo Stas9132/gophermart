@@ -45,7 +45,7 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 		log.Println(err)
 	}
 
-	err = om.db.Conn.QueryRow(context.Background(), "SELECT SUM(discounts.reward) FROM discounts JOIN orders ON discounts.id = orders.discount_id WHERE orders.order_id = $1", id).Scan(&result)
+	err = om.db.Conn.QueryRow(context.Background(), "SELECT SUM(discounts.reward) FROM discounts JOIN aorders ON discounts.id = aorders.discount_id WHERE aorders.order_id = $1", id).Scan(&result)
 	if err != nil {
 		log.Println(err)
 		return result, err
