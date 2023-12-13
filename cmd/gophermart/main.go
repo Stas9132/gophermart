@@ -48,7 +48,7 @@ func main() {
 		log.Fatal("storage open error", err)
 	}
 	h := api.NewHandler(st, l)
-	go process.StatusDaemon(ctx, st)
+	go process.StatusDaemon(ctx, c, st)
 	mRouter(h)
 	server = &http.Server{Addr: c.Address}
 	run(c)

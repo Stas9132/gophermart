@@ -3,12 +3,15 @@ package process
 import (
 	"context"
 	"github.com/shopspring/decimal"
+	"gophermart/internal/config"
 	"gophermart/internal/storage"
+	"io"
 	"log"
+	"net/http"
 	"time"
 )
 
-func StatusDaemon(ctx context.Context, st *storage.DBStorage) {
+func StatusDaemon(ctx context.Context, config config.Config, st *storage.DBStorage) {
 	for {
 		orders, err := st.GetOrdersInProcessing()
 		if err != nil {
@@ -18,6 +21,11 @@ func StatusDaemon(ctx context.Context, st *storage.DBStorage) {
 
 		for _, order := range orders {
 			order.Status = "PROCESSING"
+			resp, e := http.Get(config.AccuralSystemAddress + "/api/orders/" + order.Number)
+			log.Println(e)
+			b, e := io.ReadAll(resp.Body)
+			log.Println(string(b), e)
+
 			discount := decimal.NewFromFloat32(729.98)
 
 			if err != nil {
