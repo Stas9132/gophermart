@@ -10,7 +10,6 @@ import (
 	"gophermart/internal/logger"
 	"gophermart/internal/storage"
 	"io"
-	"log"
 	"net/http"
 	"sort"
 	"time"
@@ -150,7 +149,7 @@ func (h *Handler) PostBalanceWithdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	storage.SubBalance(req.Sum)
+	storage.SubBalance(req.Order, req.Sum)
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -162,6 +161,11 @@ func (h *Handler) GetWithdraw(w http.ResponseWriter, r *http.Request) {
 	}()
 	user = auth.GetIssuer(r.Context())
 
+	storage.Hist = []storage.HistT{{
+		Order:       "111",
+		Sum:         decimal.Decimal{},
+		ProcessedAt: time.Time{},
+	}}
 	if len(storage.Hist) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
@@ -169,6 +173,5 @@ func (h *Handler) GetWithdraw(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	log.Println(json.NewEncoder(w).Encode(storage.Hist), storage.Hist)
-
+	_ = json.NewEncoder(w).Encode(storage.Hist)
 }
