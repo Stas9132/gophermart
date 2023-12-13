@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/api"
-	"gophermart/internal/app/process"
 	"gophermart/internal/auth"
 	"gophermart/internal/config"
 	"gophermart/internal/logger"
@@ -49,7 +48,7 @@ func main() {
 		log.Fatal("storage open error", err)
 	}
 	h := api.NewHandler(st, l)
-	go process.StatusDaemon(ctx, st)
+	//go process.StatusDaemon(ctx, st)
 	mRouter(h)
 	server = &http.Server{Addr: c.Address}
 	run(c)

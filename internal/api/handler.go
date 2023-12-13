@@ -10,6 +10,7 @@ import (
 	"gophermart/internal/logger"
 	"gophermart/internal/storage"
 	"io"
+	"log"
 	"net/http"
 	"sort"
 	"time"
@@ -166,6 +167,6 @@ func (h *Handler) GetWithdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(storage.Hist)
+	log.Println(json.NewEncoder(w).Encode(storage.Hist), storage.Hist)
 
 }
