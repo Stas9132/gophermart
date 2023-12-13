@@ -17,23 +17,22 @@ func StatusDaemon(ctx context.Context, st *storage.DBStorage) {
 		log.Println("process orders : ", len(orders))
 
 		for _, order := range orders {
-			if order.Status == "NEW" {
-				order.Status = "PROCESSING"
-				discount := decimal.NewFromFloat32(729.98)
+			order.Status = "PROCESSING"
+			discount := decimal.NewFromFloat32(729.98)
 
-				if err != nil {
-					order.Status = "INVALID"
-					err = st.UpdateOrder(ctx, order)
-					if err != nil {
-						log.Printf("order status invalid %v", err)
-					}
-				}
-				order.Accrual.Add(discount)
+			if err != nil {
+				order.Status = "INVALID"
 				err = st.UpdateOrder(ctx, order)
 				if err != nil {
-					log.Printf("order status processed %v", err)
+					log.Printf("order status invalid %v", err)
 				}
+			}
+			order.Status = "PROCESSED"
 
+			order.Accrual.Add(discount)
+			err = st.UpdateOrder(ctx, order)
+			if err != nil {
+				log.Printf("order status processed %v", err)
 			}
 		}
 

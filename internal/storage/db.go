@@ -142,12 +142,15 @@ func (s *DBStorage) GetOrdersInProcessing() ([]Order, error) {
 }
 
 func (s *DBStorage) UpdateOrder(ctx context.Context, order Order) error {
+	log.Println("Update order", order)
+	log.Println("Update order2", s.m[order.Number])
+
 	_, ok := s.m[order.Number]
 	if !ok {
 		return errors.New("order not found")
 	}
 
-	_, err := s.conn.Exec(context.Background(), "UPDATE orders SET status = $1, accrual = $2 WHERE number = $3;", order.Status, order.Accrual, order.Number)
+	_, err := s.conn.Exec(ctx, "UPDATE orders SET status = $1, accrual = $2 WHERE number = $3;", order.Status, order.Accrual, order.Number)
 	if err != nil {
 		s.Error("Update Order error", l2.LogMap{"error": err})
 		return err
