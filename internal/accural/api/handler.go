@@ -85,6 +85,7 @@ func (h Handler) AccrualGetOrders(w http.ResponseWriter, r *http.Request) {
 	orderID := vars["number"]
 
 	discount, err := h.om.GetCalculatedDiscountByOrderID(orderID)
+	log.Println(discount, err)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Failed to fetch discount for the order", http.StatusInternalServerError)
