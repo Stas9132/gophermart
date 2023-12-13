@@ -19,7 +19,6 @@ func StatusDaemon(ctx context.Context, st *storage.DBStorage) {
 		for _, order := range orders {
 			if order.Status == "NEW" {
 				order.Status = "PROCESSING"
-				log.Printf("order status processing created")
 				discount := decimal.NewFromFloat32(729.98)
 
 				if err != nil {
