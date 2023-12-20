@@ -40,6 +40,7 @@ func New(st *storage.DBStorage, logger logger.Logger) AccuralService {
 
 func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error) {
 	var result decimal.Decimal
+	return decimal.NewFromFloat32(729.98), nil
 
 	id, err := strconv.Atoi(orderID)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"gophermart/pkg/config"
 	l2 "gophermart/pkg/logger"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -44,10 +45,12 @@ func process(ctx context.Context, config *config.Config, st *storage.DBStorage, 
 			return e
 		}
 		defer resp.Body.Close()
-		_, e = io.ReadAll(resp.Body)
+		b, e := io.ReadAll(resp.Body)
 		if e != nil {
 			return e
 		}
+
+		log.Println(string(b))
 
 		discount := decimal.NewFromFloat32(729.98)
 
