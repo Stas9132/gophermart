@@ -82,6 +82,7 @@ func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 	return nil
 }
 func (om OrderManager) AcceptDiscount(ctx context.Context, discount storage.Discount) error {
+	log.Println("+", discount)
 
 	_, err := om.db.Conn.Exec(ctx, "INSERT INTO discounts(match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.RewardType)
 	if err != nil {
