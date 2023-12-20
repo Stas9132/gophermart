@@ -5,7 +5,7 @@ import (
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/storage"
 	"gophermart/pkg/logger"
-	"strconv"
+	"log"
 	"strings"
 )
 
@@ -39,19 +39,12 @@ func New(st *storage.DBStorage, logger logger.Logger) AccuralService {
 }
 
 func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error) {
-	var result decimal.Decimal
-	return decimal.NewFromFloat32(729.98), nil
+	var result map[any]any
 
-	id, err := strconv.Atoi(orderID)
-	if err != nil {
-		om.Error("strconv.Atoi(orderID) error", logger.LogMap{"error": err})
-		return result, err
-	}
-
-	rows, err := om.db.Conn.Query(context.Background(), "SELECT SUM(discounts.reward) FROM discounts JOIN aorders ON discounts.id = aorders.discount_id WHERE aorders.order_id = $1", id)
+	rows, err := om.db.Conn.Query(context.Background(), "select * from aorders")
 	if err != nil {
 		om.db.Error("om.db.Conn.Query(orderID) error", logger.LogMap{"error": err})
-		return result, err
+		return decimal.Zero, err
 	}
 	defer rows.Close()
 
@@ -59,11 +52,12 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 		err = rows.Scan(&result)
 		if err != nil {
 			om.db.Error("rows.Scan(&result) error", logger.LogMap{"error": err})
-			return result, err
+			return decimal.Zero, err
 		}
+		log.Println(result)
 	}
 
-	return result, nil
+	return decimal.NewFromFloat32(729.98), nil
 }
 func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 	discounts, err := om.GetAllDiscounts(ctx)
