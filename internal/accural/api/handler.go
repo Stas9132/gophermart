@@ -40,14 +40,12 @@ func (h Handler) AccrualGoods(w http.ResponseWriter, r *http.Request) {
 	var discount storage.Discount
 	err := json.NewDecoder(r.Body).Decode(&discount)
 	if err != nil {
-		log.Println(err)
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
 	}
 
 	err = h.om.AcceptDiscount(r.Context(), discount)
 	if err != nil {
-		log.Println(err)
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
 		return
 	}
@@ -71,7 +69,6 @@ func (h Handler) AccrualOrders(w http.ResponseWriter, r *http.Request) {
 
 	err = h.om.AcceptOrder(r.Context(), orderData)
 	if err != nil {
-		log.Println(err)
 		http.Error(w, "Order entry error", http.StatusInternalServerError)
 		return
 	}
@@ -85,15 +82,13 @@ func (h Handler) AccrualGetOrders(w http.ResponseWriter, r *http.Request) {
 	orderID := vars["number"]
 
 	discount, err := h.om.GetCalculatedDiscountByOrderID(orderID)
-	log.Println(discount, err)
 	if err != nil {
-		log.Println(err)
 		http.Error(w, "Failed to fetch discount for the order", http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(struct {
+	err = json.NewEncoder(w).Encode(struct {
 		Order   string          `json:"order"`
 		Status  string          `json:"status"`
 		Accrual decimal.Decimal `json:"accrual"`
@@ -112,4 +107,8 @@ func (h Handler) AccrualGetOrders(w http.ResponseWriter, r *http.Request) {
 			return discount
 		}(),
 	})
+	if err != nil {
+		http.Error(w, "Failed encode discount", http.StatusInternalServerError)
+		return
+	}
 }
