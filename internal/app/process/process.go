@@ -35,7 +35,7 @@ func StatusDaemon(ctx context.Context, config *config.Config, st *storage.DBStor
 	}
 }
 
-func process(ctx context.Context, config *config.Config, st *storage.DBStorage, orders []storage.Order) error {
+func process(ctx context.Context, config *config.Config, st *storage.DBStorage, orders []storage.Order) (err error) {
 
 	for _, order := range orders {
 		order.Status = "PROCESSING"
@@ -51,7 +51,6 @@ func process(ctx context.Context, config *config.Config, st *storage.DBStorage, 
 
 		discount := decimal.NewFromFloat32(729.98)
 
-		var err error
 		if err != nil {
 			order.Status = "INVALID"
 			err = st.UpdateOrder(ctx, order)
