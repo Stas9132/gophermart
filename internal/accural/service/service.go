@@ -39,22 +39,23 @@ func New(st *storage.DBStorage, logger logger.Logger) AccuralService {
 }
 
 func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error) {
-	var result map[any]any
+	var result decimal.Decimal
 
 	rows, err := om.db.Conn.Query(context.Background(), "select * from aorders")
 	if err != nil {
 		om.db.Error("om.db.Conn.Query(orderID) error", logger.LogMap{"error": err})
-		return decimal.Zero, err
+		return result, err
 	}
 	defer rows.Close()
 
 	if rows.Next() {
-		err = rows.Scan(&result)
+		var a1, a2, a3 any
+		err = rows.Scan(&a1, &a2, &a3)
 		if err != nil {
 			om.db.Error("rows.Scan(&result) error", logger.LogMap{"error": err})
-			return decimal.Zero, err
+			return result, err
 		}
-		log.Println(result)
+		log.Println(a1, a2, a3)
 	}
 
 	return decimal.NewFromFloat32(729.98), nil
