@@ -50,12 +50,14 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 
 	if rows.Next() {
 		var a1, a2, a3 any
+		var i int
 		err = rows.Scan(&a1, &a2, &a3)
 		if err != nil {
 			om.db.Error("rows.Scan(&result) error", logger.LogMap{"error": err})
 			return result, err
 		}
-		log.Println(a1, a2, a3)
+		log.Println(i, a1, a2, a3)
+		i++
 	}
 
 	return decimal.NewFromFloat32(729.98), nil
