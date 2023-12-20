@@ -2,12 +2,11 @@ package process
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/storage"
 	"gophermart/pkg/config"
 	l2 "gophermart/pkg/logger"
-	"io"
-	"log"
 	"net/http"
 	"time"
 )
@@ -45,14 +44,19 @@ func process(ctx context.Context, config *config.Config, st *storage.DBStorage, 
 			return e
 		}
 		defer resp.Body.Close()
-		b, e := io.ReadAll(resp.Body)
-		if e != nil {
+
+		type AccrualRespT struct {
+			Order   string          `json:"order"`
+			Status  string          `json:"status"`
+			Accrual decimal.Decimal `json:"accrual"`
+		}
+		var accrResp AccrualRespT
+
+		if e = json.NewDecoder(resp.Body).Decode(&accrResp); e != nil {
 			return e
 		}
 
-		log.Println(string(b))
-
-		discount := decimal.NewFromFloat32(729.98)
+		discount := accrResp.Accrual
 
 		if err != nil {
 			order.Status = "INVALID"
