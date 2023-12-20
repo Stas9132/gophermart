@@ -3,11 +3,9 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/api"
 	"gophermart/internal/app/process"
-	"gophermart/internal/auth"
 	"gophermart/internal/storage"
 	"gophermart/pkg/config"
 	"gophermart/pkg/logger"
@@ -50,9 +48,8 @@ func main() {
 	if err != nil {
 		log.Fatal("storage open error", err)
 	}
-	h := api.NewHandler(st, l)
+	api.NewHandler(st, l)
 	go process.StatusDaemon(ctx, c, st)
-	mRouter(h)
 	server = &http.Server{Addr: c.Address}
 	run(c)
 
@@ -64,22 +61,4 @@ func main() {
 
 	time.Sleep(time.Second)
 	os.Exit(0)
-}
-
-func mRouter(handler *api.Handler) {
-	r := mux.NewRouter()
-
-	r.Use(auth.Authorization)
-
-	r.HandleFunc("/api/user/test", handler.Test).Methods(http.MethodGet)
-	r.HandleFunc("/api/user/register", handler.Register).Methods(http.MethodPost)
-	r.HandleFunc("/api/user/login", handler.Login).Methods(http.MethodPost)
-
-	r.HandleFunc("/api/user/orders", handler.PostOrders).Methods(http.MethodPost)
-	r.HandleFunc("/api/user/orders", handler.GetOrders).Methods(http.MethodGet)
-	r.HandleFunc("/api/user/balance", handler.GetBalance).Methods(http.MethodGet)
-	r.HandleFunc("/api/user/balance/withdraw", handler.PostBalanceWithdraw).Methods(http.MethodPost)
-	r.HandleFunc("/api/user/withdrawals", handler.GetWithdraw).Methods(http.MethodGet)
-
-	http.Handle("/", r)
 }

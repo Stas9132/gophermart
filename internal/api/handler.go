@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ShiraazMoollatjie/goluhn"
+	"github.com/gorilla/mux"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/auth"
 	"gophermart/internal/storage"
@@ -27,29 +28,23 @@ type Handler struct {
 	logger.Logger
 }
 
-//func mRouter(handler *api.Handler) {
-//	r := mux.NewRouter()
-//
-//	r.Use(auth.Authorization)
-//
-//	r.HandleFunc("/api/user/test", handler.Test).Methods(http.MethodGet)
-//	r.HandleFunc("/api/user/register", handler.Register).Methods(http.MethodPost)
-//	r.HandleFunc("/api/user/login", handler.Login).Methods(http.MethodPost)
-//
-//	r.HandleFunc("/api/user/orders", handler.PostOrders).Methods(http.MethodPost)
-//	r.HandleFunc("/api/user/orders", handler.GetOrders).Methods(http.MethodGet)
-//	r.HandleFunc("/api/user/balance", handler.GetBalance).Methods(http.MethodGet)
-//	r.HandleFunc("/api/user/balance/withdraw", handler.PostBalanceWithdraw).Methods(http.MethodPost)
-//	r.HandleFunc("/api/user/withdrawals", handler.GetWithdraw).Methods(http.MethodGet)
-//
-//	http.Handle("/", r)
-//}
-
 func NewHandler(storage Storage, l logger.Logger) *Handler {
 	handler := &Handler{
 		storage: storage,
 		Logger:  l,
 	}
+	r := mux.NewRouter()
+	r.Use(auth.Authorization)
+	r.HandleFunc("/api/user/test", handler.Test).Methods(http.MethodGet)
+	r.HandleFunc("/api/user/register", handler.Register).Methods(http.MethodPost)
+	r.HandleFunc("/api/user/login", handler.Login).Methods(http.MethodPost)
+
+	r.HandleFunc("/api/user/orders", handler.PostOrders).Methods(http.MethodPost)
+	r.HandleFunc("/api/user/orders", handler.GetOrders).Methods(http.MethodGet)
+	r.HandleFunc("/api/user/balance", handler.GetBalance).Methods(http.MethodGet)
+	r.HandleFunc("/api/user/balance/withdraw", handler.PostBalanceWithdraw).Methods(http.MethodPost)
+	r.HandleFunc("/api/user/withdrawals", handler.GetWithdraw).Methods(http.MethodGet)
+	http.Handle("/", r)
 	return handler
 }
 
