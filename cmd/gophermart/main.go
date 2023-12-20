@@ -38,11 +38,9 @@ func run(c *config.Config) {
 
 func main() {
 	decimal.MarshalJSONWithoutQuotes = true
-	storage.Balance.Current = decimal.NewFromFloat32(729.98)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	go process.StatusDaemon(ctx)
 	c := config.New()
 	l := logger.NewSlogLogger(c)
 	st, err := storage.NewDBStorage(ctx, c, l)
@@ -50,7 +48,7 @@ func main() {
 		log.Fatal("storage open error", err)
 	}
 	h := api.NewHandler(st, l)
-
+	go process.StatusDaemon(ctx, c, st)
 	mRouter(h)
 	server = &http.Server{Addr: c.Address}
 	run(c)

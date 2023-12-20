@@ -2,15 +2,16 @@ package process
 
 import (
 	"context"
-	"gophermart/internal/accural/service"
+	"github.com/shopspring/decimal"
+	"gophermart/internal/config"
 	"gophermart/internal/storage"
+	"io"
 	"log"
+	"net/http"
 	"time"
 )
 
-func StatusDaemon(ctx context.Context) {
-	st := storage.New()
-	accural := service.New()
+func StatusDaemon(ctx context.Context, config *config.Config, st *storage.DBStorage) {
 	for {
 		orders, err := st.GetOrdersInProcessing()
 		if err != nil {
@@ -19,23 +20,29 @@ func StatusDaemon(ctx context.Context) {
 		log.Println("process orders : ", len(orders))
 
 		for _, order := range orders {
-			if order.Status == "NEW" {
-				order.Status = "PROCESSING"
-				log.Printf("order status processing created")
-				discount, err := accural.GetCalculatedDiscountByOrderID(order.Number)
-				if err != nil {
-					order.Status = "INVALID"
-					err = st.UpdateOrder(ctx, order)
-					if err != nil {
-						log.Printf("order status invalid %v", err)
-					}
-				}
-				order.Accrual.Add(discount)
+			order.Status = "PROCESSING"
+			resp, e := http.Get(config.AccuralSystemAddress + "/api/orders/" + order.Number)
+			log.Println(e)
+			b, e := io.ReadAll(resp.Body)
+			log.Println(string(b), e)
+
+			resp.Body.Close()
+			discount := decimal.NewFromFloat32(729.98)
+
+			if err != nil {
+				order.Status = "INVALID"
 				err = st.UpdateOrder(ctx, order)
 				if err != nil {
-					log.Printf("order status processed %v", err)
+					log.Printf("order status invalid %v", err)
 				}
+			}
+			order.Status = "PROCESSED"
+			order.Accrual = discount
 
+			order.Accrual.Add(discount)
+			err = st.UpdateOrder(ctx, order)
+			if err != nil {
+				log.Printf("order status processed %v", err)
 			}
 		}
 

@@ -39,7 +39,7 @@ func NewDBStorage(ctx context.Context, config *config.Config, logger l2.Logger) 
 	}
 	rows, err := conn.Query(ctx, "select number, status, accrual, uploaded_at, issuer from orders")
 	if err != nil {
-		logger.Error("select request error", logger.LogMap{"error": err})
+		logger.Error("select request error", l2.LogMap{"error": err})
 		return nil, err
 	}
 	m := make(map[string]*Order)
@@ -48,7 +48,7 @@ func NewDBStorage(ctx context.Context, config *config.Config, logger l2.Logger) 
 		err = rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.UploadedAt, &order.Issuer)
 		m[order.Number] = &order
 		if err != nil {
-			logger.Error("scan error", logger.LogMap{"error": err})
+			logger.Error("scan error", l2.LogMap{"error": err})
 			return nil, err
 		}
 	}
@@ -70,16 +70,16 @@ func createDB(DBConn string, logger l2.Logger) (*pgx.Conn, error) {
 		return nil, err
 	}
 
-	logger.Info("Successfully connected to the database!", logger.LogMap{"DSN": DBConn})
+	logger.Info("Successfully connected to the database!", l2.LogMap{"DSN": DBConn})
 
 	m, err := migrate.New("file://internal/storage/migration", DBConn)
 	if err != nil {
-		logger.Error("Error while create migration", logger.LogMap{"error": err})
+		logger.Error("Error while create migration", l2.LogMap{"error": err})
 		return nil, err
 	}
 	_ = m.Drop()
 	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		logger.Error("Error while migration up", logger.LogMap{"error": err})
+		logger.Error("Error while migration up", l2.LogMap{"error": err})
 		return nil, err
 	}
 	logger.Info("Migration complete!")
@@ -142,6 +142,7 @@ func (s *DBStorage) UpdateOrder(ctx context.Context, order Order) error {
 	if !ok {
 		return errors.New("order not found")
 	}
+	s.m[order.Number] = &order
 
 	_, err := s.conn.Exec(ctx, "UPDATE orders SET status = $1, accrual = $2 WHERE number = $3;", order.Status, order.Accrual, order.Number)
 	if err != nil {

@@ -28,10 +28,10 @@ func AddBalance(value decimal.Decimal) {
 	Balance.Current = Balance.Current.Add(value)
 }
 
-func SubBalance(value decimal.Decimal) {
+func SubBalance(order string, value decimal.Decimal) {
 	Balance.Current = Balance.Current.Sub(value)
 	Balance.Withdrawn = Balance.Withdrawn.Add(value)
 	lock.Lock()
-	Hist = append(Hist, HistT{Sum: value, ProcessedAt: time.Now()})
+	Hist = append(Hist, HistT{Order: order, Sum: value, ProcessedAt: time.Now()})
 	lock.Unlock()
 }
