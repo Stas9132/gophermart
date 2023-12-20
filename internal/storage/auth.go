@@ -5,7 +5,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/hex"
-	"gophermart/internal/logger"
+	"gophermart/pkg/logger"
 )
 
 type Auth struct {

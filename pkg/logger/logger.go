@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"gophermart/internal/config"
+	"gophermart/pkg/config"
 	"log"
 	"log/slog"
 	"os"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/storage"
-	"gophermart/internal/logger"
+	"gophermart/pkg/logger"
 	"log"
 	"strconv"
 	"strings"

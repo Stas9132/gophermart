@@ -7,7 +7,7 @@ import (
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/service"
 	"gophermart/internal/accural/storage"
-	"gophermart/internal/logger"
+	"gophermart/pkg/logger"
 	"log"
 	"net/http"
 )

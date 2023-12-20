@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/golang-jwt/jwt/v5"
 	auth2 "gophermart/internal/auth"
-	"gophermart/internal/logger"
 	"gophermart/internal/storage"
+	"gophermart/pkg/logger"
 	"net/http"
 	"time"
 )
