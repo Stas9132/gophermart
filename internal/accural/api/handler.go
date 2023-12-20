@@ -8,6 +8,7 @@ import (
 	"gophermart/internal/accural/service"
 	"gophermart/internal/accural/storage"
 	"gophermart/pkg/logger"
+	"log"
 	"net/http"
 )
 
@@ -89,6 +90,7 @@ func (h Handler) AccrualGetOrders(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to fetch discount for the order", http.StatusInternalServerError)
 		return
 	}
+	log.Println("==========================================", discount, "==========================================")
 
 	w.WriteHeader(http.StatusOK)
 	if err = json.NewEncoder(w).Encode(struct {
