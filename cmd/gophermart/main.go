@@ -36,8 +36,11 @@ func run(c *config.Config) {
 	}()
 }
 
-func main() {
+func init() {
 	decimal.MarshalJSONWithoutQuotes = true
+}
+
+func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 

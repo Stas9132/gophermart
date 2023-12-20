@@ -3,8 +3,8 @@ package process
 import (
 	"context"
 	"github.com/shopspring/decimal"
-	"gophermart/internal/config"
 	"gophermart/internal/storage"
+	"gophermart/pkg/config"
 	"io"
 	"log"
 	"net/http"
