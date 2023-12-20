@@ -5,7 +5,6 @@ import (
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/storage"
 	"gophermart/pkg/logger"
-	"log"
 	"strings"
 )
 
@@ -49,15 +48,10 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 	defer rows.Close()
 
 	if rows.Next() {
-		var a1, a2, a3, a4 any
-		var i int
-		err = rows.Scan(&a1, &a2, &a3, &a4)
 		if err != nil {
 			om.db.Error("rows.Scan(&result) error", logger.LogMap{"error": err})
 			return result, err
 		}
-		log.Println(i, a1, a2, a3, a4)
-		i++
 	}
 
 	return decimal.NewFromFloat32(729.98), nil
@@ -82,7 +76,6 @@ func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 	return nil
 }
 func (om OrderManager) AcceptDiscount(ctx context.Context, discount storage.Discount) error {
-	log.Println("+", discount)
 
 	_, err := om.db.Conn.Exec(ctx, "INSERT INTO discounts(match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.RewardType)
 	if err != nil {
