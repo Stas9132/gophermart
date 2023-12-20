@@ -5,6 +5,7 @@ import (
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/storage"
 	"gophermart/pkg/logger"
+	"log"
 	"strings"
 )
 
@@ -66,6 +67,8 @@ func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 	if err != nil {
 		dc = decimal.NewFromInt(-1)
 	}
+
+	log.Println("+++", order.Order, dc)
 
 	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO aorders(order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
 	if err != nil {
