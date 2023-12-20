@@ -54,7 +54,7 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 		}
 	}
 
-	return decimal.NewFromFloat32(729.98), nil
+	return result, nil
 }
 func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 	discounts, err := om.GetAllDiscounts(ctx)
