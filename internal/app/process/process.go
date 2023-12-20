@@ -5,47 +5,69 @@ import (
 	"github.com/shopspring/decimal"
 	"gophermart/internal/storage"
 	"gophermart/pkg/config"
+	l2 "gophermart/pkg/logger"
 	"io"
-	"log"
 	"net/http"
 	"time"
 )
 
-func StatusDaemon(ctx context.Context, config *config.Config, st *storage.DBStorage) {
+func StatusDaemon(ctx context.Context, config *config.Config, st *storage.DBStorage, logger l2.Logger) {
+
+	ticker := time.NewTicker(time.Second)
+
 	for {
-		orders, err := st.GetOrdersInProcessing()
-		if err != nil {
-			log.Printf("get orders: %v\n", err)
-		}
-		log.Println("process orders : ", len(orders))
-
-		for _, order := range orders {
-			order.Status = "PROCESSING"
-			resp, e := http.Get(config.AccuralSystemAddress + "/api/orders/" + order.Number)
-			log.Println(e)
-			b, e := io.ReadAll(resp.Body)
-			log.Println(string(b), e)
-
-			resp.Body.Close()
-			discount := decimal.NewFromFloat32(729.98)
-
+		select {
+		case <-ticker.C:
+			orders, err := st.GetOrdersInProcessing()
 			if err != nil {
-				order.Status = "INVALID"
-				err = st.UpdateOrder(ctx, order)
-				if err != nil {
-					log.Printf("order status invalid %v", err)
-				}
+				logger.Error("Get Orders in processing error", l2.LogMap{"error": err})
 			}
-			order.Status = "PROCESSED"
-			order.Accrual = discount
+			logger.Info("process orders : ", l2.LogMap{"len": len(orders)})
 
-			order.Accrual.Add(discount)
+			if err := process(ctx, config, st, orders); err != nil {
+				logger.Error("Status daemon canceled", l2.LogMap{"error": ctx.Err()})
+			}
+		case <-ctx.Done():
+
+			logger.Warn("Status daemon canceled", l2.LogMap{"error": ctx.Err()})
+			return
+		}
+	}
+}
+
+func process(ctx context.Context, config *config.Config, st *storage.DBStorage, orders []storage.Order) error {
+
+	for _, order := range orders {
+		order.Status = "PROCESSING"
+		resp, e := http.Get(config.AccuralSystemAddress + "/api/orders/" + order.Number)
+		if e != nil {
+			return e
+		}
+		defer resp.Body.Close()
+		_, e = io.ReadAll(resp.Body)
+		if e != nil {
+			return e
+		}
+
+		discount := decimal.NewFromFloat32(729.98)
+
+		var err error
+		if err != nil {
+			order.Status = "INVALID"
 			err = st.UpdateOrder(ctx, order)
 			if err != nil {
-				log.Printf("order status processed %v", err)
+				return err
 			}
 		}
+		order.Status = "PROCESSED"
+		order.Accrual = discount
 
-		time.Sleep(time.Second)
+		order.Accrual.Add(discount)
+		err = st.UpdateOrder(ctx, order)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
