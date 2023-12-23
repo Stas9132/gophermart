@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/gorilla/mux"
 	"gophermart/internal/accural/api"
 	"gophermart/internal/accural/storage"
 	"gophermart/pkg/config"
@@ -16,32 +15,26 @@ import (
 	"time"
 )
 
-var (
-	server       *http.Server
-	shutdownChan = make(chan struct{})
-)
-
 func main() {
+	shutdownChan := make(chan struct{})
+	var server *http.Server
 
 	c := config.New()
 	l := logger.NewSlogLogger(c)
 	st, err := storage.NewDBStorageAccural(context.Background(), c, l)
 	if err != nil {
-		log.Println(err)
-
+		log.Fatal(err)
 	}
 
-	handler := api.NewAccuralHandler(st, l)
+	_ = api.NewAccuralHandler(st, l)
 
-	mRouter(handler)
-	if err := run(c); err != nil {
+	if err = run(c, server); err != nil {
 		panic(err)
 	}
 	go func() {
 		sigchan := make(chan os.Signal, 1)
 		signal.Notify(sigchan, os.Interrupt, syscall.SIGTERM)
 		<-sigchan
-
 		close(shutdownChan)
 	}()
 
@@ -49,14 +42,14 @@ func main() {
 	defer st.Conn.Close(context.Background())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
+	if err = server.Shutdown(ctx); err != nil {
 		log.Printf("Ошибка при завершении работы сервера: %v\n", err)
 	}
 
 	os.Exit(0)
 }
 
-func run(c *config.Config) error {
+func run(c *config.Config, server *http.Server) error {
 	log.Printf("Сервер запущен на %v\n", c.Address)
 
 	server = &http.Server{Addr: c.Address}
@@ -65,24 +58,5 @@ func run(c *config.Config) error {
 			panic(err)
 		}
 	}()
-
-	<-shutdownChan
-	log.Println("Завершение работы сервера...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
-		log.Printf("Ошибка при завершении работы сервера: %v\n", err)
-	}
-
 	return nil
-}
-
-func mRouter(handler *api.Handler) {
-	r := mux.NewRouter()
-
-	r.HandleFunc("/api/goods", handler.AccrualGoods).Methods(http.MethodPost)
-	r.HandleFunc("/api/orders", handler.AccrualOrders).Methods(http.MethodPost)
-	r.HandleFunc("/api/orders/{number}", handler.AccrualGetOrders).Methods(http.MethodGet)
-	http.Handle("/", r)
 }

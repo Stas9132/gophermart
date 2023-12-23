@@ -23,10 +23,18 @@ type Handler struct {
 }
 
 func NewAccuralHandler(storage *storage.DBStorage, logger logger.Logger) *Handler {
-	return &Handler{
+	handler := &Handler{
 		Logger: logger,
 		om:     service.NewOrderManager(storage, logger),
 	}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/api/goods", handler.AccrualGoods).Methods(http.MethodPost)
+	r.HandleFunc("/api/orders", handler.AccrualOrders).Methods(http.MethodPost)
+	r.HandleFunc("/api/orders/{number}", handler.AccrualGetOrders).Methods(http.MethodGet)
+	http.Handle("/", r)
+
+	return handler
 
 }
 func (h Handler) AccrualGoods(w http.ResponseWriter, r *http.Request) {
