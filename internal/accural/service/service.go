@@ -5,17 +5,16 @@ import (
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/storage"
 	"gophermart/pkg/logger"
-	"log"
-	"strconv"
 	"strings"
 )
 
 type OrderManager struct {
 	db *storage.DBStorage
+	logger.Logger
 }
 
-func NewOrderManager(db *storage.DBStorage) *OrderManager {
-	return &OrderManager{db: db}
+func NewOrderManager(db *storage.DBStorage, logger logger.Logger) *OrderManager {
+	return &OrderManager{db: db, Logger: logger}
 }
 
 type AccuralService interface {
@@ -34,40 +33,35 @@ type Good struct {
 	Price       decimal.Decimal `json:"price"`
 }
 
-func New(st *storage.DBStorage) AccuralService {
-	return NewOrderManager(st)
+func New(st *storage.DBStorage, logger logger.Logger) AccuralService {
+	return NewOrderManager(st, logger)
 }
 
 func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error) {
 	var result decimal.Decimal
 
-	id, err := strconv.Atoi(orderID)
+	rows, err := om.db.Conn.Query(context.Background(), "select discount from aorders where order_id = $1", orderID)
 	if err != nil {
-		log.Println(err)
-		return result, err
-	}
-
-	rows, err := om.db.Conn.Query(context.Background(), "SELECT SUM(discounts.reward) FROM discounts JOIN aorders ON discounts.id = aorders.discount_id WHERE aorders.order_id = $1", id)
-	if err != nil {
-		log.Println(err)
+		om.db.Error("om.db.Conn.Query(orderID) error", logger.LogMap{"error": err})
 		return result, err
 	}
 	defer rows.Close()
 
 	if rows.Next() {
-		err := rows.Scan(&result)
-		if err != nil {
-			log.Println(err)
+		if err = rows.Scan(&result); err != nil {
+			om.db.Error("rows.Scan(&result) error", logger.LogMap{"error": err})
 			return result, err
 		}
 	}
+
+	result = result.Round(2)
 
 	return result, nil
 }
 func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 	discounts, err := om.GetAllDiscounts(ctx)
 	if err != nil {
-		log.Println(err)
+		om.Error("om.GetAllDiscounts(ctx) error", logger.LogMap{"error": err})
 		return err
 	}
 	dc, err := order.CalculateDiscount(discounts)
@@ -75,10 +69,9 @@ func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 		dc = decimal.NewFromInt(-1)
 	}
 
-	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO aorders(order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
+	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO aorders(order_id, discount) VALUES ($1, $2)", order.Order, dc)
 	if err != nil {
 		om.db.Logger.Error("unable insert into orders table", logger.LogMap{"error": err, "AcceptOrder": "discounts"})
-		log.Println(err)
 		return err
 	}
 
@@ -89,7 +82,6 @@ func (om OrderManager) AcceptDiscount(ctx context.Context, discount storage.Disc
 	_, err := om.db.Conn.Exec(ctx, "INSERT INTO discounts(match, reward, reward_type) VALUES ($1, $2, $3)", discount.Match, discount.Reward, discount.RewardType)
 	if err != nil {
 		om.db.Logger.Error("unable insert into discounts table", logger.LogMap{"error": err, "AcceptDiscounts": "discount"})
-		log.Println(err)
 		return err
 	}
 
@@ -106,7 +98,7 @@ func (o Order) CalculateDiscount(discounts []storage.Discount) (decimal.Decimal,
 				continue
 			}
 			switch d.RewardType {
-			case "%":
+			case "%", "":
 				result = result.Add(g.Price.Mul(d.Reward).Div(decimal.NewFromInt(100)))
 			case "pt":
 				result = result.Add(d.Reward)
@@ -122,7 +114,7 @@ func (om OrderManager) GetAllDiscounts(ctx context.Context) ([]storage.Discount,
 
 	rows, err := om.db.Conn.Query(ctx, "SELECT match, reward, reward_type FROM discounts")
 	if err != nil {
-		log.Println(err)
+		om.db.Logger.Error("om.db.Conn.Query() error", logger.LogMap{"error": err})
 		return nil, err
 	}
 	defer rows.Close()
@@ -136,7 +128,7 @@ func (om OrderManager) GetAllDiscounts(ctx context.Context) ([]storage.Discount,
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Println(err)
+		om.db.Logger.Error("rows.Err() error", logger.LogMap{"error": err})
 		return nil, err
 	}
 

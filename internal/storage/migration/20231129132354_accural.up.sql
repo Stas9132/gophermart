@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS aorders
 (
     id SERIAL PRIMARY KEY ,
     order_id TEXT,
-    discount_id NUMERIC
+    discount NUMERIC
 );
 
 CREATE TABLE IF NOT EXISTS orders
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS orders
     id SERIAL PRIMARY KEY ,
     number TEXT,
     status TEXT,
-    accrual INT,
+    accrual NUMERIC,
     uploaded_at TIMESTAMP WITH TIME ZONE NOT NULL,
     issuer TEXT
 );
