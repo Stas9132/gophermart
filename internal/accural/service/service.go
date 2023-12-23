@@ -53,8 +53,8 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 			om.db.Error("rows.Scan(&result) error", logger.LogMap{"error": err})
 			return result, err
 		}
-		var a, b any
-		log.Println(rows.Scan(&a, &b), a, b)
+		var a, b, c any
+		log.Println(rows.Scan(&a, &b), a, b, c)
 	}
 
 	return result, nil
