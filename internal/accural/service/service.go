@@ -68,7 +68,7 @@ func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 		dc = decimal.NewFromInt(-1)
 	}
 
-	log.Println("+++", order.Order, dc)
+	log.Println("+++", order, dc)
 
 	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO aorders(order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
 	if err != nil {
