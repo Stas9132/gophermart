@@ -56,6 +56,8 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 		log.Println(rows.Scan(&result), result, orderID)
 	}
 
+	result = result.Round(2)
+
 	return result, nil
 }
 func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
