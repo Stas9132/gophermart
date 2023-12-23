@@ -17,13 +17,6 @@ func NewOrderManager(db *storage.DBStorage, logger logger.Logger) *OrderManager 
 	return &OrderManager{db: db, Logger: logger}
 }
 
-type AccuralService interface {
-	GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error)
-	AcceptOrder(ctx context.Context, order Order) error
-	AcceptDiscount(ctx context.Context, discount storage.Discount) error
-	GetAllDiscounts(ctx context.Context) ([]storage.Discount, error)
-}
-
 type Order struct {
 	Order string `json:"Order"`
 	Goods []Good `json:"goods"`
@@ -31,10 +24,6 @@ type Order struct {
 type Good struct {
 	Description string          `json:"description"`
 	Price       decimal.Decimal `json:"price"`
-}
-
-func New(st *storage.DBStorage, logger logger.Logger) AccuralService {
-	return NewOrderManager(st, logger)
 }
 
 func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.Decimal, error) {

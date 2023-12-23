@@ -21,7 +21,7 @@ var (
 	server *http.Server
 )
 
-func run(c *config.Config) {
+func run() {
 	log.Println("Server starting")
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
@@ -51,7 +51,7 @@ func main() {
 	api.NewHandler(st, l)
 	go process.StatusDaemon(ctx, c, st, l)
 	server = &http.Server{Addr: c.Address}
-	run(c)
+	run()
 
 	<-ctx.Done()
 

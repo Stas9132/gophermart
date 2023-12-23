@@ -24,10 +24,6 @@ type HistT struct {
 
 var Hist []HistT
 
-func AddBalance(value decimal.Decimal) {
-	Balance.Current = Balance.Current.Add(value)
-}
-
 func SubBalance(order string, value decimal.Decimal) {
 	Balance.Current = Balance.Current.Sub(value)
 	Balance.Withdrawn = Balance.Withdrawn.Add(value)

@@ -21,17 +21,6 @@ type DBStorage struct {
 	m    map[string]*Order
 }
 
-type StorageImpl interface {
-	NewOrder(ctx context.Context, order Order) error
-	GetOrders(ctx context.Context) ([]Order, error)
-	UpdateOrder(ctx context.Context, order Order) error
-	GetOrdersInProcessing() ([]Order, error)
-}
-
-func New() StorageImpl {
-	return &DBStorage{}
-}
-
 func NewDBStorage(ctx context.Context, config *config.Config, logger l2.Logger) (*DBStorage, error) {
 	conn, err := createDB(config.DatabaseURI, logger)
 	if err != nil {
