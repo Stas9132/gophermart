@@ -54,7 +54,7 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 			return result, err
 		}
 		var a, b, c any
-		log.Println(rows.Scan(&a, &b, &c), a, b, c)
+		log.Println(rows.Scan(&a, &b, &c), a, b, c, orderID)
 	}
 
 	return result, nil
