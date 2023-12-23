@@ -64,7 +64,6 @@ func (h Handler) AccrualOrders(w http.ResponseWriter, r *http.Request) {
 
 	var orderData service.Order
 	err := json.NewDecoder(r.Body).Decode(&orderData)
-	log.Println("++", orderData)
 	if err != nil {
 		h.Error("json.NewDecoder() error", logger.LogMap{"error": err})
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)

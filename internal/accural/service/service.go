@@ -49,7 +49,7 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 	defer rows.Close()
 
 	if rows.Next() {
-		if err != nil {
+		if err = rows.Err(); err != nil {
 			om.db.Error("rows.Scan(&result) error", logger.LogMap{"error": err})
 			return result, err
 		}
@@ -68,7 +68,7 @@ func (om OrderManager) AcceptOrder(ctx context.Context, order Order) error {
 		dc = decimal.NewFromInt(-1)
 	}
 
-	log.Println("+++", order, dc)
+	log.Println("+++", order, dc, discounts)
 
 	_, err = om.db.Conn.Exec(context.Background(), "INSERT INTO aorders(order_id, discount_id) VALUES ($1, $2)", order.Order, dc)
 	if err != nil {
