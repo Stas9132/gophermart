@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS aorders
 (
     id SERIAL PRIMARY KEY ,
     order_id TEXT,
-    discount_id NUMERIC
+    discount NUMERIC
 );
 
 CREATE TABLE IF NOT EXISTS orders

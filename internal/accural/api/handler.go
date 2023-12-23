@@ -8,7 +8,6 @@ import (
 	"gophermart/internal/accural/service"
 	"gophermart/internal/accural/storage"
 	"gophermart/pkg/logger"
-	"log"
 	"net/http"
 )
 
@@ -39,7 +38,6 @@ func (h Handler) AccrualGoods(w http.ResponseWriter, r *http.Request) {
 
 	var discount storage.Discount
 	err := json.NewDecoder(r.Body).Decode(&discount)
-	log.Println("+", discount)
 	if err != nil {
 		h.Error("json.NewDecoder() error", logger.LogMap{"error": err})
 		http.Error(w, "Failed to parse request body", http.StatusInternalServerError)
