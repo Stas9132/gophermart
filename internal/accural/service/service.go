@@ -95,11 +95,12 @@ func (o Order) CalculateDiscount(discounts []storage.Discount) (decimal.Decimal,
 
 	for _, g := range o.Goods {
 		for _, d := range discounts {
+			log.Println("++", g.Description, d.Match)
 			if !strings.Contains(g.Description, d.Match) {
 				continue
 			}
 			switch d.RewardType {
-			case "%":
+			case "%", "":
 				result = result.Add(g.Price.Mul(d.Reward).Div(decimal.NewFromInt(100)))
 			case "pt":
 				result = result.Add(d.Reward)
