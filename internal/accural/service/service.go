@@ -5,7 +5,6 @@ import (
 	"github.com/shopspring/decimal"
 	"gophermart/internal/accural/storage"
 	"gophermart/pkg/logger"
-	"log"
 	"strings"
 )
 
@@ -49,11 +48,10 @@ func (om OrderManager) GetCalculatedDiscountByOrderID(orderID string) (decimal.D
 	defer rows.Close()
 
 	if rows.Next() {
-		if err = rows.Err(); err != nil {
+		if err = rows.Scan(&result); err != nil {
 			om.db.Error("rows.Scan(&result) error", logger.LogMap{"error": err})
 			return result, err
 		}
-		log.Println(rows.Scan(&result), result, orderID)
 	}
 
 	result = result.Round(2)
